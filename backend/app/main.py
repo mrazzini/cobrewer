@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -49,9 +50,12 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
+    details = jsonable_encoder(
+        exc.errors(), custom_encoder={bytes: lambda b: b.decode(errors="replace")}
+    )
     return JSONResponse(
         status_code=422,
-        content={"data": None, "error": "Validation error", "meta": {"details": exc.errors()}},
+        content={"data": None, "error": "Validation error", "meta": {"details": details}},
     )
 
 

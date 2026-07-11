@@ -180,6 +180,18 @@ async def test_users_me_and_equipment(client):
     assert len(resp.json()["data"]["equipment"]) == 1
 
 
+async def test_non_json_body_returns_enveloped_422(client):
+    # A body sent without Content-Type: application/json reaches the validator
+    # as raw bytes; the envelope handler must serialize that without a 500.
+    resp = await client.post(
+        "/api/v1/beans",
+        content=b'{"name": "Sneaky Bean"}',
+        headers={**DEV, "Content-Type": "text/plain"},
+    )
+    assert resp.status_code == 422
+    assert resp.json()["error"] == "Validation error"
+
+
 async def test_extract_unconfigured_returns_503(client):
     files = {"file": ("bag.jpg", b"\xff\xd8\xff fake-jpeg", "image/jpeg")}
     resp = await client.post("/api/v1/extract/bag-photo", files=files, headers=DEV)
