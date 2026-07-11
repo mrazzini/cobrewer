@@ -30,7 +30,7 @@ class BeanCard extends StatelessWidget {
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
-                        color: CobraColors.text,
+                        color: Palette.cream,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -42,7 +42,7 @@ class BeanCard extends StatelessWidget {
                       bean.cuppingScore!.toStringAsFixed(
                           bean.cuppingScore! % 1 == 0 ? 0 : 2),
                       style: const TextStyle(
-                        color: CobraColors.green,
+                        color: Palette.blush,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -56,7 +56,7 @@ class BeanCard extends StatelessWidget {
                   if (bean.roaster != null) bean.roaster!,
                   if (bean.origin != null) bean.origin!,
                 ].join(' · '),
-                style: const TextStyle(color: CobraColors.textMuted, fontSize: 13),
+                style: const TextStyle(color: Palette.creamDim, fontSize: 13),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -83,13 +83,12 @@ class BeanCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: CobraColors.surfaceRaised,
+        color: Palette.periWell,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: CobraColors.border),
       ),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 11.5, color: CobraColors.textMuted),
+        style: const TextStyle(fontSize: 11.5, color: Palette.cream),
       ),
     );
   }

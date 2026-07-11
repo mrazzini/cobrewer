@@ -88,7 +88,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               onChanged: _onSearchChanged,
               decoration: const InputDecoration(
                 hintText: 'Search beans, roasters, origins…',
-                prefixIcon: Icon(Icons.search, color: CobraColors.textMuted),
+                prefixIcon: Icon(Icons.search, color: Palette.creamDim),
               ),
             ),
           ),
@@ -146,7 +146,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ? label
         : options.firstWhere((o) => o.$1 == value, orElse: () => (value, value)).$2;
     return PopupMenuButton<String?>(
-      color: CobraColors.surfaceRaised,
+      color: Palette.periWell,
       onSelected: (v) => onChanged(v == '' ? null : v),
       itemBuilder: (context) => [
         const PopupMenuItem(value: '', child: Text('Any')),
@@ -159,12 +159,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(selectedLabel,
                 style: TextStyle(
-                  color: value == null ? CobraColors.textMuted : CobraColors.green,
+                  color: value == null ? Palette.creamDim : Palette.blush,
                   fontSize: 13,
                 )),
             Icon(Icons.arrow_drop_down,
                 size: 18,
-                color: value == null ? CobraColors.textMuted : CobraColors.green),
+                color: value == null ? Palette.creamDim : Palette.blush),
           ],
         ),
       ),
@@ -174,7 +174,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget _body() {
     if (_loading) {
       return const Center(
-          child: CircularProgressIndicator(color: CobraColors.green));
+          child: CircularProgressIndicator(color: Palette.blush));
     }
     if (_error != null) {
       return _ErrorRetry(message: _error!, onRetry: _fetch);
@@ -182,11 +182,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
     if (_beans.isEmpty) {
       return const Center(
         child: Text('No beans match those filters.',
-            style: TextStyle(color: CobraColors.textMuted)),
+            style: TextStyle(color: Palette.creamDim)),
       );
     }
     return RefreshIndicator(
-      color: CobraColors.green,
+      color: Palette.blush,
       onRefresh: _fetch,
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
@@ -196,7 +196,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           if (i == 0) {
             return Text(
               '$_total bean${_total == 1 ? '' : 's'}',
-              style: const TextStyle(color: CobraColors.textMuted, fontSize: 13),
+              style: const TextStyle(color: Palette.creamDim, fontSize: 13),
             );
           }
           final bean = _beans[i - 1];
@@ -219,7 +219,7 @@ class _ErrorRetry extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(message, style: const TextStyle(color: CobraColors.textMuted)),
+          Text(message, style: const TextStyle(color: Palette.creamDim)),
           const SizedBox(height: 12),
           OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
         ],

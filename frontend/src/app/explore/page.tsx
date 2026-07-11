@@ -25,7 +25,7 @@ const ORIGINS = [
 ];
 
 const selectClass =
-  "rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 focus:border-green-400/60 focus:outline-none";
+  "rounded-md border border-transparent bg-peri-well px-3 py-2 text-sm text-cream placeholder:text-cream-dim/70 focus:border-cream/60 focus:outline-none";
 
 export default function ExplorePage() {
   const [beans, setBeans] = useState<Bean[]>([]);
@@ -62,8 +62,8 @@ export default function ExplorePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-10">
-      <h1 className="mb-1 text-3xl font-bold">Explore Beans</h1>
-      <p className="mb-6 text-neutral-400">
+      <h1 className="mb-1 text-3xl font-bold uppercase tracking-tight">Explore Beans</h1>
+      <p className="mb-6 text-cream-dim">
         {total > 0 ? `${total} beans in the library` : "Find your next coffee"}
       </p>
 
@@ -110,13 +110,13 @@ export default function ExplorePage() {
       </div>
 
       {error && (
-        <p className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4 text-amber-500">
+        <p className="rounded-md bg-blush/20 p-4 text-cream">
           {error}
         </p>
       )}
-      {loading && !error && <p className="text-neutral-500">Brewing up results…</p>}
+      {loading && !error && <p className="text-cream-dim/80">Brewing up results…</p>}
       {!loading && !error && beans.length === 0 && (
-        <p className="text-neutral-500">No beans match those filters.</p>
+        <p className="text-cream-dim/80">No beans match those filters.</p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

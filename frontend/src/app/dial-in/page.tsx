@@ -10,13 +10,13 @@ import { BREWERS, GRINDERS, formatBrewTime, roastLabel } from "@/lib/constants";
 import type { Bean, BrewLog, Recommendation } from "@/lib/types";
 
 const inputClass =
-  "rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 focus:border-green-400/60 focus:outline-none";
+  "rounded-md border border-transparent bg-peri-well px-3 py-2 text-sm text-cream placeholder:text-cream-dim/70 focus:border-cream/60 focus:outline-none";
 
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-3">
-      <p className="text-xs uppercase tracking-wide text-neutral-500">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${accent ? "text-green-400" : ""}`}>{value}</p>
+    <div className="rounded-lg bg-cream/25 p-3">
+      <p className="text-xs uppercase tracking-wide text-ink/70">{label}</p>
+      <p className={`mt-1 text-lg font-semibold ${accent ? "text-cream" : "text-ink"}`}>{value}</p>
     </div>
   );
 }
@@ -118,21 +118,21 @@ function DialInContent() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="mb-1 text-3xl font-bold">Dial In</h1>
-      <p className="mb-8 text-neutral-400">
+      <h1 className="mb-1 text-3xl font-bold uppercase tracking-tight">Dial In</h1>
+      <p className="mb-8 text-cream-dim">
         Pick a bean and your gear — get parameters, brew, then log how it went.
       </p>
 
       {/* Step 1: bean */}
-      <section className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900/60 p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+      <section className="mb-6 rounded-xl bg-peri-deep/70 p-5">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
           1 · Bean
         </h2>
         {bean ? (
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-semibold">{bean.name}</p>
-              <p className="text-sm text-neutral-400">
+              <p className="text-sm text-cream-dim">
                 {[bean.roaster, bean.origin, roastLabel(bean.roast_level)]
                   .filter(Boolean)
                   .join(" · ")}
@@ -144,7 +144,7 @@ function DialInContent() {
                 setBean(null);
                 setRec(null);
               }}
-              className="text-sm text-neutral-500 hover:text-white"
+              className="text-sm text-cream-dim/80 hover:text-cream"
             >
               change
             </button>
@@ -159,11 +159,11 @@ function DialInContent() {
               className={`${inputClass} w-full`}
             />
             {beanResults.length > 0 && (
-              <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-neutral-800 bg-neutral-900 shadow-xl">
+              <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md bg-peri-well shadow-xl">
                 {beanResults.map((b) => (
                   <li key={b.id}>
                     <button
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-green-400/10"
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-blush/25"
                       onClick={() => {
                         setBean(b);
                         setBeanSearch("");
@@ -171,22 +171,22 @@ function DialInContent() {
                       }}
                     >
                       <span className="font-medium">{b.name}</span>
-                      <span className="text-neutral-500"> — {b.roaster ?? b.origin ?? ""}</span>
+                      <span className="text-cream-dim/80"> — {b.roaster ?? b.origin ?? ""}</span>
                     </button>
                   </li>
                 ))}
               </ul>
             )}
-            <p className="mt-2 text-sm text-neutral-500">
-              or <Link href="/explore" className="text-green-400 hover:underline">browse the library</Link>
+            <p className="mt-2 text-sm text-cream-dim/80">
+              or <Link href="/explore" className="font-semibold text-blush hover:underline">browse the library</Link>
             </p>
           </div>
         )}
       </section>
 
       {/* Step 2: equipment */}
-      <section className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900/60 p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+      <section className="mb-6 rounded-xl bg-peri-deep/70 p-5">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
           2 · Equipment
         </h2>
         <div className="flex flex-wrap gap-3">
@@ -212,7 +212,7 @@ function DialInContent() {
           <button
             onClick={getRecommendation}
             disabled={!bean || recLoading}
-            className="rounded-md bg-green-500 px-5 py-2 text-sm font-medium text-neutral-950 transition-colors hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:cursor-not-allowed disabled:opacity-40"
           >
             {recLoading ? "Computing…" : "Get recommendation"}
           </button>
@@ -220,20 +220,20 @@ function DialInContent() {
       </section>
 
       {error && (
-        <p className="mb-6 rounded-md border border-amber-500/40 bg-amber-500/5 p-4 text-amber-500">
+        <p className="mb-6 rounded-md bg-blush/20 p-4 text-cream">
           {error}
         </p>
       )}
 
       {/* Step 3: recommendation */}
       {params && (
-        <section className="mb-6 rounded-xl border border-green-400/30 bg-green-400/5 p-5">
+        <section className="mb-6 rounded-xl bg-blush p-5 text-ink">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-green-400">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-ink">
               3 · Your recipe
             </h2>
             {rec?.confidence_score != null && (
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-ink/70">
                 confidence {(rec.confidence_score * 100).toFixed(0)}%
               </span>
             )}
@@ -252,7 +252,7 @@ function DialInContent() {
             {params.pressure_bar && <Stat label="Pressure" value={`${params.pressure_bar} bar`} />}
           </div>
           {params.notes.length > 0 && (
-            <ul className="mt-3 space-y-1 text-sm text-neutral-400">
+            <ul className="mt-3 space-y-1 text-sm text-ink/80">
               {params.notes.map((n) => (
                 <li key={n}>• {n}</li>
               ))}
@@ -263,8 +263,8 @@ function DialInContent() {
 
       {/* Step 4: log the brew */}
       {bean && (
-        <section className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+        <section className="rounded-xl bg-peri-deep/70 p-5">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
             {params ? "4" : "3"} · Log the brew
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -277,7 +277,7 @@ function DialInContent() {
                 ["Brew time (s)", time, setTime],
               ] as const
             ).map(([label, value, setter]) => (
-              <label key={label} className="flex flex-col gap-1 text-xs text-neutral-500">
+              <label key={label} className="flex flex-col gap-1 text-xs text-cream-dim/80">
                 {label}
                 <input
                   type="number"
@@ -288,7 +288,7 @@ function DialInContent() {
                 />
               </label>
             ))}
-            <label className="flex flex-col gap-1 text-xs text-neutral-500">
+            <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
               Rating
               <RatingStars value={rating} onChange={setRating} />
             </label>
@@ -304,12 +304,12 @@ function DialInContent() {
             <button
               onClick={logBrew}
               disabled={logging}
-              className="rounded-md bg-green-500 px-5 py-2 text-sm font-medium text-neutral-950 transition-colors hover:bg-green-400 disabled:opacity-40"
+              className="rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:opacity-40"
             >
               {logging ? "Saving…" : "Log brew"}
             </button>
             {logged && (
-              <span className="text-sm text-green-400">
+              <span className="text-sm font-semibold text-blush">
                 Logged ✓ —{" "}
                 <Link href="/journal" className="underline">
                   view journal

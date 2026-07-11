@@ -19,26 +19,26 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col px-6">
       <section className="flex flex-col items-center gap-6 py-24 text-center">
-        <span className="rounded-full border border-green-400/30 bg-green-400/5 px-4 py-1 text-xs uppercase tracking-widest text-green-400">
-          Strike with precision
+        <span className="rounded-full bg-blush px-4 py-1 text-xs font-semibold uppercase tracking-widest text-ink">
+          Anywhere, really
         </span>
-        <h1 className="text-6xl font-bold tracking-tight">
-          <span className="text-green-400">Co</span>brewer
+        <h1 className="text-6xl font-bold uppercase tracking-tight">
+          <span className="text-blush">Co</span>brewer
         </h1>
-        <p className="max-w-xl text-lg text-neutral-400">
+        <p className="max-w-xl text-lg text-cream-dim">
           Your coffee brewing co-pilot. Dial in your parameters, log your brews, and let the data
           guide your next cup.
         </p>
         <div className="flex gap-3">
           <Link
             href="/explore"
-            className="rounded-lg bg-green-500 px-6 py-3 font-medium text-neutral-950 transition-colors hover:bg-green-400"
+            className="rounded-lg bg-blush px-6 py-3 font-medium text-ink transition-colors hover:bg-blush-deep"
           >
             Explore beans
           </Link>
           <Link
             href="/dial-in"
-            className="rounded-lg border border-neutral-700 px-6 py-3 font-medium text-neutral-200 transition-colors hover:border-green-400/50 hover:text-green-400"
+            className="rounded-lg border border-cream/40 px-6 py-3 font-medium text-cream transition-colors hover:border-cream hover:bg-cream/10"
           >
             Dial in a brew
           </Link>
@@ -49,10 +49,10 @@ export default function Home() {
         {FEATURES.map(({ title, body }) => (
           <div
             key={title}
-            className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6"
+            className="rounded-xl bg-peri-deep/70 p-6"
           >
-            <h2 className="mb-2 font-semibold text-green-400">{title}</h2>
-            <p className="text-sm leading-relaxed text-neutral-400">{body}</p>
+            <h2 className="mb-2 font-semibold uppercase tracking-wide text-blush">{title}</h2>
+            <p className="text-sm leading-relaxed text-cream-dim">{body}</p>
           </div>
         ))}
       </section>

@@ -66,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editEquipment({Equipment? existing, int? index}) async {
     final result = await showModalBottomSheet<Equipment>(
       context: context,
-      backgroundColor: CobraColors.surfaceRaised,
+      backgroundColor: Palette.periWell,
       isScrollControlled: true,
       builder: (context) => _EquipmentSheet(existing: existing),
     );
@@ -94,14 +94,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _body() {
     if (_loading) {
       return const Center(
-          child: CircularProgressIndicator(color: CobraColors.green));
+          child: CircularProgressIndicator(color: Palette.blush));
     }
     if (_error != null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_error!, style: const TextStyle(color: CobraColors.textMuted)),
+            Text(_error!, style: const TextStyle(color: Palette.creamDim)),
             const SizedBox(height: 12),
             OutlinedButton(onPressed: _fetch, child: const Text('Retry')),
           ],
@@ -115,18 +115,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Card(
           child: ListTile(
             leading: const CircleAvatar(
-              backgroundColor: CobraColors.greenDeep,
-              child: Icon(Icons.person, color: CobraColors.text),
+              backgroundColor: Palette.blushDeep,
+              child: Icon(Icons.person, color: Palette.cream),
             ),
             title: Text(
               profile.displayName ?? profile.clerkId,
               style: const TextStyle(
-                  color: CobraColors.text, fontWeight: FontWeight.w600),
+                  color: Palette.cream, fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
               'AI extractions: ${profile.aiCredits.remaining} of '
               '${profile.aiCredits.extractionsLimit} left',
-              style: const TextStyle(color: CobraColors.textMuted, fontSize: 13),
+              style: const TextStyle(color: Palette.creamDim, fontSize: 13),
             ),
           ),
         ),
@@ -137,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 'MY EQUIPMENT',
                 style: TextStyle(
-                  color: CobraColors.green,
+                  color: Palette.blush,
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                   letterSpacing: 1.1,
@@ -146,9 +146,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             TextButton.icon(
               onPressed: () => _editEquipment(),
-              icon: const Icon(Icons.add, size: 18, color: CobraColors.green),
+              icon: const Icon(Icons.add, size: 18, color: Palette.blush),
               label:
-                  const Text('Add', style: TextStyle(color: CobraColors.green)),
+                  const Text('Add', style: TextStyle(color: Palette.blush)),
             ),
           ],
         ),
@@ -157,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Text(
               'No equipment yet. Add your brewer and grinder so dial-in can use them.',
-              style: TextStyle(color: CobraColors.textMuted, fontSize: 13),
+              style: TextStyle(color: Palette.creamDim, fontSize: 13),
             ),
           ),
         for (var i = 0; i < _equipment.length; i++) ...[
@@ -170,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   if (_equipment[i].model?.isNotEmpty ?? false)
                     _equipment[i].model!,
                 ].join(' '),
-                style: const TextStyle(color: CobraColors.text, fontSize: 14),
+                style: const TextStyle(color: Palette.cream, fontSize: 14),
               ),
               subtitle: Text(
                 [
@@ -179,12 +179,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     '${_equipment[i].burrType} burrs',
                 ].join(' · '),
                 style: const TextStyle(
-                    color: CobraColors.textMuted, fontSize: 12),
+                    color: Palette.creamDim, fontSize: 12),
               ),
               onTap: () => _editEquipment(existing: _equipment[i], index: i),
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline,
-                    size: 20, color: CobraColors.textMuted),
+                    size: 20, color: Palette.creamDim),
                 onPressed: () => setState(() => _equipment.removeAt(i)),
               ),
             ),
@@ -239,7 +239,7 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
           Text(
             widget.existing == null ? 'Add equipment' : 'Edit equipment',
             style: const TextStyle(
-                color: CobraColors.text,
+                color: Palette.cream,
                 fontWeight: FontWeight.w700,
                 fontSize: 16),
           ),
@@ -247,7 +247,7 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
           DropdownButtonFormField<String>(
             value: _type,
             decoration: const InputDecoration(labelText: 'Type'),
-            dropdownColor: CobraColors.surfaceRaised,
+            dropdownColor: Palette.periWell,
             items: [
               for (final t in _equipmentTypes)
                 DropdownMenuItem(value: t, child: Text(t)),

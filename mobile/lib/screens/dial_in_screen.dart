@@ -175,14 +175,14 @@ class _DialInScreenState extends State<DialInScreen> {
             onChanged: _onBeanSearchChanged,
             decoration: const InputDecoration(
               hintText: 'Pick a bean to dial in…',
-              prefixIcon: Icon(Icons.search, color: CobraColors.textMuted),
+              prefixIcon: Icon(Icons.search, color: Palette.creamDim),
             ),
           ),
         ),
         Expanded(
           child: _searchingBeans
               ? const Center(
-                  child: CircularProgressIndicator(color: CobraColors.green))
+                  child: CircularProgressIndicator(color: Palette.blush))
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: _beanResults.length,
@@ -217,14 +217,14 @@ class _DialInScreenState extends State<DialInScreen> {
               _searchBeans(_beanSearchController.text);
             }),
             child: const Text('Change bean',
-                style: TextStyle(color: CobraColors.green)),
+                style: TextStyle(color: Palette.blush)),
           ),
         ),
         _sectionTitle('2 · Equipment'),
         DropdownButtonFormField<String>(
           value: _brewer,
           decoration: const InputDecoration(labelText: 'Brewer'),
-          dropdownColor: CobraColors.surfaceRaised,
+          dropdownColor: Palette.periWell,
           items: [
             for (final b in brewers)
               DropdownMenuItem(value: b.key, child: Text(b.label)),
@@ -235,7 +235,7 @@ class _DialInScreenState extends State<DialInScreen> {
         DropdownButtonFormField<String?>(
           value: _grinder,
           decoration: const InputDecoration(labelText: 'Grinder (optional)'),
-          dropdownColor: CobraColors.surfaceRaised,
+          dropdownColor: Palette.periWell,
           items: [
             const DropdownMenuItem<String?>(
                 value: null, child: Text('No grinder / other')),
@@ -272,7 +272,7 @@ class _DialInScreenState extends State<DialInScreen> {
       child: Text(
         text,
         style: const TextStyle(
-          color: CobraColors.green,
+          color: Palette.blush,
           fontWeight: FontWeight.w700,
           fontSize: 13,
           letterSpacing: 1.1,
@@ -293,7 +293,11 @@ class _DialInScreenState extends State<DialInScreen> {
       ('Time', formatBrewTime(p.brewTimeMinSeconds, p.brewTimeMaxSeconds)),
       if (p.pressureBar != null) ('Pressure', '${p.pressureBar} bar'),
     ];
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Palette.blush,
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -311,12 +315,12 @@ class _DialInScreenState extends State<DialInScreen> {
                       children: [
                         Text(label,
                             style: const TextStyle(
-                                color: CobraColors.textMuted, fontSize: 12)),
+                                color: Palette.inkSoft, fontSize: 12)),
                         const SizedBox(height: 2),
                         Text(value,
                             style: const TextStyle(
-                                color: CobraColors.text,
-                                fontWeight: FontWeight.w600,
+                                color: Palette.ink,
+                                fontWeight: FontWeight.w700,
                                 fontSize: 15)),
                       ],
                     ),
@@ -329,7 +333,7 @@ class _DialInScreenState extends State<DialInScreen> {
                 child: Text(
                   'Converted from ${p.grindSettingC40Clicks} C40 clicks for ${grinderLabel(p.grindSetting.grinder)}.',
                   style: const TextStyle(
-                      color: CobraColors.textMuted, fontSize: 12),
+                      color: Palette.inkSoft, fontSize: 12),
                 ),
               ),
             for (final note in p.notes)
@@ -339,11 +343,11 @@ class _DialInScreenState extends State<DialInScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('•  ',
-                        style: TextStyle(color: CobraColors.amber)),
+                        style: TextStyle(color: Palette.ink)),
                     Expanded(
                       child: Text(note,
                           style: const TextStyle(
-                              color: CobraColors.textMuted, fontSize: 13)),
+                              color: Palette.inkSoft, fontSize: 13)),
                     ),
                   ],
                 ),
@@ -354,7 +358,7 @@ class _DialInScreenState extends State<DialInScreen> {
                 child: Text(
                   'Confidence ${(rec.confidenceScore! * 100).round()}%',
                   style:
-                      const TextStyle(color: CobraColors.green, fontSize: 12),
+                      const TextStyle(color: Palette.inkSoft, fontSize: 12),
                 ),
               ),
           ],
@@ -393,7 +397,7 @@ class _DialInScreenState extends State<DialInScreen> {
         Row(
           children: [
             const Text('Rating',
-                style: TextStyle(color: CobraColors.textMuted)),
+                style: TextStyle(color: Palette.creamDim)),
             const SizedBox(width: 10),
             RatingStars(
               rating: _rating,

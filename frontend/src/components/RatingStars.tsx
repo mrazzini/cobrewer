@@ -17,8 +17,8 @@ export default function RatingStars({
             onClick={() => onChange(star)}
             aria-label={`Rate ${star} of 5`}
             className={`text-xl transition-colors ${
-              value != null && star <= value ? "text-amber-500" : "text-neutral-700"
-            } hover:text-amber-400`}
+              value != null && star <= value ? "text-blush" : "text-ink/40"
+            } hover:text-blush-deep`}
           >
             ★
           </button>
@@ -26,7 +26,7 @@ export default function RatingStars({
           <span
             key={star}
             className={`text-sm ${
-              value != null && star <= value ? "text-amber-500" : "text-neutral-700"
+              value != null && star <= value ? "text-blush" : "text-ink/40"
             }`}
           >
             ★

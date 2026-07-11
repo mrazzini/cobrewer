@@ -21,7 +21,7 @@ class CobrewerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cobrewer',
-      theme: buildCobraTheme(),
+      theme: buildCobrewerTheme(),
       debugShowCheckedModeBanner: false,
       home: HomeShell(api: api),
     );

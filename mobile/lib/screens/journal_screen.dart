@@ -65,7 +65,7 @@ class _JournalScreenState extends State<JournalScreen> {
         actions: [
           IconButton(
             onPressed: _fetch,
-            icon: const Icon(Icons.refresh, color: CobraColors.textMuted),
+            icon: const Icon(Icons.refresh, color: Palette.creamDim),
             tooltip: 'Refresh',
           ),
         ],
@@ -77,14 +77,14 @@ class _JournalScreenState extends State<JournalScreen> {
   Widget _body() {
     if (_loading) {
       return const Center(
-          child: CircularProgressIndicator(color: CobraColors.green));
+          child: CircularProgressIndicator(color: Palette.blush));
     }
     if (_error != null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_error!, style: const TextStyle(color: CobraColors.textMuted)),
+            Text(_error!, style: const TextStyle(color: Palette.creamDim)),
             const SizedBox(height: 12),
             OutlinedButton(onPressed: _fetch, child: const Text('Retry')),
           ],
@@ -94,11 +94,11 @@ class _JournalScreenState extends State<JournalScreen> {
     if (_brews.isEmpty) {
       return const Center(
         child: Text('No brews yet — dial one in!',
-            style: TextStyle(color: CobraColors.textMuted)),
+            style: TextStyle(color: Palette.creamDim)),
       );
     }
     return RefreshIndicator(
-      color: CobraColors.green,
+      color: Palette.blush,
       onRefresh: _fetch,
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
@@ -136,7 +136,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
-                        color: CobraColors.text),
+                        color: Palette.cream),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -150,13 +150,13 @@ class _JournalScreenState extends State<JournalScreen> {
               '${brewerLabel(brew.brewer)} · $date'
               '${brew.generatedBy == 'rules' ? ' · from recipe' : ''}',
               style:
-                  const TextStyle(color: CobraColors.textMuted, fontSize: 13),
+                  const TextStyle(color: Palette.creamDim, fontSize: 13),
             ),
             if (params.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
                 params.join(' · '),
-                style: const TextStyle(color: CobraColors.textMuted, fontSize: 13),
+                style: const TextStyle(color: Palette.creamDim, fontSize: 13),
               ),
             ],
             if (brew.notes?.isNotEmpty ?? false) ...[
@@ -164,7 +164,7 @@ class _JournalScreenState extends State<JournalScreen> {
               Text(
                 brew.notes!,
                 style: const TextStyle(
-                    color: CobraColors.text,
+                    color: Palette.cream,
                     fontSize: 13,
                     fontStyle: FontStyle.italic),
               ),

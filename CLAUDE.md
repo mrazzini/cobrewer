@@ -5,8 +5,8 @@ cobrewer is a specialty coffee brewing co-pilot that helps users dial in their b
 
 ## Brand
 - Name: Cobrewer
-- Theme: Cobra — dark, sleek, precise. Friendly not scary.
-- Colors: background #0a0a0a, green accent #4ade80 → #16a34a, amber #f59e0b, white text
+- Theme: Retro, flat, playful — full-bleed color blocks, bold uppercase headings, no borders or gradients
+- Colors (two-color palette): periwinkle #7185BF canvas (#6377B1 cards, #57699F wells), blush pink #ED99A4 as the single accent (buttons, stars, active states, the recipe card); cream #F7F4ED text on periwinkle, ink #333A63 text on pink
 - Tone: knowledgeable coffee friend, not corporate
 
 ## Tech Stack

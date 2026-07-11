@@ -1,113 +1,125 @@
 import 'package:flutter/material.dart';
 
-/// Cobrewer brand palette — cobra theme: dark, sleek, precise.
-abstract final class CobraColors {
-  static const background = Color(0xFF0A0A0A);
-  static const surface = Color(0xFF141414);
-  static const surfaceRaised = Color(0xFF1C1C1C);
-  static const border = Color(0xFF2A2A2A);
-  static const green = Color(0xFF4ADE80);
-  static const greenDeep = Color(0xFF16A34A);
-  static const amber = Color(0xFFF59E0B);
-  static const text = Color(0xFFF5F5F5);
-  static const textMuted = Color(0xFF9CA3AF);
+/// Cobrewer palette — retro, flat, friendly.
+/// Two colors carry everything: periwinkle canvas, blush pink accent.
+abstract final class Palette {
+  static const peri = Color(0xFF7185BF);
+  static const periDeep = Color(0xFF6377B1);
+  static const periWell = Color(0xFF57699F);
+  static const blush = Color(0xFFED99A4);
+  static const blushDeep = Color(0xFFE8858F);
+  static const cream = Color(0xFFF7F4ED);
+  static const creamDim = Color(0xFFD9DEF1);
+  static const ink = Color(0xFF333A63);
+
+  /// Ink softened toward blush — secondary text on pink surfaces.
+  static const inkSoft = Color(0xFF5A5380);
 }
 
-ThemeData buildCobraTheme() {
+ThemeData buildCobrewerTheme() {
   final base = ThemeData(
     brightness: Brightness.dark,
     colorScheme: const ColorScheme.dark(
-      primary: CobraColors.green,
-      onPrimary: CobraColors.background,
-      secondary: CobraColors.amber,
-      surface: CobraColors.surface,
-      onSurface: CobraColors.text,
-      error: Color(0xFFF87171),
+      primary: Palette.blush,
+      onPrimary: Palette.ink,
+      secondary: Palette.cream,
+      onSecondary: Palette.ink,
+      surface: Palette.periDeep,
+      onSurface: Palette.cream,
+      error: Palette.blushDeep,
     ),
-    scaffoldBackgroundColor: CobraColors.background,
+    scaffoldBackgroundColor: Palette.peri,
     useMaterial3: true,
   );
 
   return base.copyWith(
     appBarTheme: const AppBarTheme(
-      backgroundColor: CobraColors.background,
-      foregroundColor: CobraColors.text,
+      backgroundColor: Palette.peri,
+      foregroundColor: Palette.cream,
       elevation: 0,
       centerTitle: false,
+      titleTextStyle: TextStyle(
+        color: Palette.cream,
+        fontSize: 22,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.2,
+      ),
     ),
     cardTheme: CardThemeData(
-      color: CobraColors.surface,
+      color: Palette.periDeep,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: CobraColors.border),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       margin: EdgeInsets.zero,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: CobraColors.surface,
+      fillColor: Palette.periWell,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: CobraColors.border),
+        borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: CobraColors.border),
+        borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: CobraColors.green),
+        borderSide: const BorderSide(color: Palette.cream, width: 1.5),
       ),
-      hintStyle: const TextStyle(color: CobraColors.textMuted),
-      labelStyle: const TextStyle(color: CobraColors.textMuted),
+      hintStyle: const TextStyle(color: Palette.creamDim),
+      labelStyle: const TextStyle(color: Palette.creamDim),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: CobraColors.green,
-        foregroundColor: CobraColors.background,
-        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        backgroundColor: Palette.blush,
+        foregroundColor: Palette.ink,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: CobraColors.text,
-        side: const BorderSide(color: CobraColors.border),
+        foregroundColor: Palette.cream,
+        side: BorderSide(color: Palette.cream.withValues(alpha: 0.4)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     ),
     chipTheme: base.chipTheme.copyWith(
-      backgroundColor: CobraColors.surface,
-      selectedColor: CobraColors.greenDeep,
-      side: const BorderSide(color: CobraColors.border),
-      labelStyle: const TextStyle(color: CobraColors.text, fontSize: 13),
+      backgroundColor: Palette.periWell,
+      selectedColor: Palette.blush,
+      side: BorderSide.none,
+      labelStyle: const TextStyle(color: Palette.cream, fontSize: 13),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: CobraColors.surface,
-      indicatorColor: CobraColors.greenDeep.withValues(alpha: 0.35),
+      backgroundColor: Palette.periDeep,
+      indicatorColor: Palette.blush,
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
           color: states.contains(WidgetState.selected)
-              ? CobraColors.green
-              : CobraColors.textMuted,
+              ? Palette.ink
+              : Palette.creamDim,
         ),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => TextStyle(
           fontSize: 12,
+          fontWeight: states.contains(WidgetState.selected)
+              ? FontWeight.w700
+              : FontWeight.w400,
           color: states.contains(WidgetState.selected)
-              ? CobraColors.green
-              : CobraColors.textMuted,
+              ? Palette.cream
+              : Palette.creamDim,
         ),
       ),
     ),
-    dividerTheme: const DividerThemeData(color: CobraColors.border),
+    dividerTheme: DividerThemeData(
+      color: Palette.cream.withValues(alpha: 0.15),
+    ),
     snackBarTheme: const SnackBarThemeData(
-      backgroundColor: CobraColors.surfaceRaised,
-      contentTextStyle: TextStyle(color: CobraColors.text),
+      backgroundColor: Palette.ink,
+      contentTextStyle: TextStyle(color: Palette.cream),
       behavior: SnackBarBehavior.floating,
     ),
   );

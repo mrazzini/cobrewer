@@ -23,7 +23,7 @@ class RatingStars extends StatelessWidget {
         final star = Icon(
           filled ? Icons.star_rounded : Icons.star_outline_rounded,
           size: size,
-          color: filled ? CobraColors.amber : CobraColors.textMuted,
+          color: filled ? Palette.blush : Palette.creamDim,
         );
         if (onChanged == null) return star;
         return IconButton(

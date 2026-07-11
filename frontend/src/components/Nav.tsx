@@ -15,10 +15,10 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-neutral-800 bg-neutral-950/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-peri-well/50 bg-peri/90 backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-4">
-        <Link href="/" className="text-lg font-bold tracking-tight">
-          <span className="text-green-400">Co</span>brewer
+        <Link href="/" className="text-lg font-bold uppercase tracking-tight">
+          <span className="text-blush">Co</span>brewer
         </Link>
         <div className="flex flex-1 items-center gap-1 text-sm">
           {LINKS.map(({ href, label }) => (
@@ -27,8 +27,8 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
               href={href}
               className={`rounded-md px-3 py-1.5 transition-colors ${
                 pathname.startsWith(href)
-                  ? "bg-green-400/10 text-green-400"
-                  : "text-neutral-400 hover:text-white"
+                  ? "bg-blush font-semibold text-ink"
+                  : "text-cream-dim hover:text-cream"
               }`}
             >
               {label}
@@ -39,7 +39,7 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
           <>
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="rounded-md bg-green-500 px-4 py-1.5 text-sm font-medium text-neutral-950 transition-colors hover:bg-green-400">
+                <button className="rounded-md bg-blush px-4 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-blush-deep">
                   Sign in
                 </button>
               </SignInButton>
@@ -49,7 +49,7 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
             </SignedIn>
           </>
         ) : (
-          <span className="rounded-md border border-amber-500/40 px-2.5 py-1 text-xs text-amber-500">
+          <span className="rounded-md border border-cream/40 px-2.5 py-1 text-xs uppercase tracking-wide text-cream/80">
             dev mode
           </span>
         )}
