@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<Equipment> _equipment = [];
   bool _loading = true;
   bool _saving = false;
+  bool _dirty = false;
   String? _error;
 
   @override
@@ -52,7 +53,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     setState(() {
       _saving = false;
-      if (res.ok) _equipment = List.of(res.data!);
+      if (res.ok) {
+        _equipment = List.of(res.data!);
+        _dirty = false;
+      }
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -77,6 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else {
         _equipment.add(result);
       }
+      _dirty = true;
     });
   }
 
@@ -185,16 +190,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline,
                     size: 20, color: Palette.creamDim),
-                onPressed: () => setState(() => _equipment.removeAt(i)),
+                onPressed: () => setState(() {
+                  _equipment.removeAt(i);
+                  _dirty = true;
+                }),
               ),
             ),
           ),
           const SizedBox(height: 8),
         ],
         const SizedBox(height: 8),
+        if (_dirty)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Unsaved changes',
+              style: TextStyle(
+                  color: Palette.blush,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic),
+              textAlign: TextAlign.center,
+            ),
+          ),
         FilledButton(
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? 'Saving…' : 'Save equipment'),
+          child: Text(_saving
+              ? 'Saving…'
+              : _dirty
+                  ? 'Save equipment •'
+                  : 'Save equipment'),
         ),
       ],
     );
@@ -218,6 +242,7 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
       TextEditingController(text: widget.existing?.model ?? '');
   late final _burrController =
       TextEditingController(text: widget.existing?.burrType ?? '');
+  String? _validationError;
 
   @override
   void dispose() {
@@ -272,19 +297,29 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
                   const InputDecoration(labelText: 'Burr type (conical/flat)'),
             ),
           ],
+          if (_validationError != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              _validationError!,
+              style: const TextStyle(color: Palette.blushDeep, fontSize: 13),
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () {
+              final brand = _brandController.text.trim();
+              final model = _modelController.text.trim();
+              if (brand.isEmpty && model.isEmpty) {
+                setState(() =>
+                    _validationError = 'Give it at least a brand or a model.');
+                return;
+              }
               Navigator.pop(
                 context,
                 Equipment(
                   equipmentType: _type,
-                  brand: _brandController.text.trim().isEmpty
-                      ? null
-                      : _brandController.text.trim(),
-                  model: _modelController.text.trim().isEmpty
-                      ? null
-                      : _modelController.text.trim(),
+                  brand: brand.isEmpty ? null : brand,
+                  model: model.isEmpty ? null : model,
                   burrType: _type == 'grinder' &&
                           _burrController.text.trim().isNotEmpty
                       ? _burrController.text.trim()

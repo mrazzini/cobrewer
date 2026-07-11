@@ -156,9 +156,32 @@ class Recommendation {
       );
 }
 
+/// Slim bean payload embedded in brew responses (no per-bean fetches).
+class BeanSummary {
+  final String id;
+  final String name;
+  final String? roaster;
+  final String? origin;
+
+  const BeanSummary({
+    required this.id,
+    required this.name,
+    this.roaster,
+    this.origin,
+  });
+
+  factory BeanSummary.fromJson(Map<String, dynamic> json) => BeanSummary(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        roaster: json['roaster'] as String?,
+        origin: json['origin'] as String?,
+      );
+}
+
 class BrewLog {
   final String id;
   final String beanId;
+  final BeanSummary? bean;
   final String brewer;
   final String? grinder;
   final num? grindSetting;
@@ -175,6 +198,7 @@ class BrewLog {
   const BrewLog({
     required this.id,
     required this.beanId,
+    this.bean,
     required this.brewer,
     this.grinder,
     this.grindSetting,
@@ -189,9 +213,19 @@ class BrewLog {
     required this.timestamp,
   });
 
+  /// The backend serialises timestamps as naive UTC — parse them as UTC so
+  /// `.toLocal()` in the UI shifts to the device timezone instead of no-op'ing.
+  static DateTime _parseUtc(String raw) {
+    final hasZone = raw.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(raw);
+    return DateTime.parse(hasZone ? raw : '${raw}Z');
+  }
+
   factory BrewLog.fromJson(Map<String, dynamic> json) => BrewLog(
         id: json['id'] as String,
         beanId: json['bean_id'] as String,
+        bean: json['bean'] == null
+            ? null
+            : BeanSummary.fromJson(json['bean'] as Map<String, dynamic>),
         brewer: json['brewer'] as String,
         grinder: json['grinder'] as String?,
         grindSetting: json['grind_setting'] as num?,
@@ -203,7 +237,7 @@ class BrewLog {
         rating: (json['rating'] as num?)?.toInt(),
         notes: json['notes'] as String?,
         generatedBy: json['generated_by'] as String?,
-        timestamp: DateTime.parse(json['timestamp'] as String),
+        timestamp: _parseUtc(json['timestamp'] as String),
       );
 }
 

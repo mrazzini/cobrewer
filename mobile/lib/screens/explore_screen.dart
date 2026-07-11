@@ -19,12 +19,15 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
+  static const _pageSize = 30;
+
   final _searchController = TextEditingController();
   Timer? _debounce;
 
   List<Bean> _beans = [];
   int _total = 0;
   bool _loading = true;
+  bool _loadingMore = false;
   String? _error;
 
   String? _origin;
@@ -47,11 +50,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
   void _onSearchChanged(String _) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), _fetch);
+    // Rebuild so the clear (✕) button appears/disappears with the text.
+    setState(() {});
   }
 
-  Future<void> _fetch() async {
+  /// [silent] keeps the current list on screen (pull-to-refresh) instead of
+  /// swapping it for a full-screen spinner.
+  Future<void> _fetch({bool silent = false}) async {
     setState(() {
-      _loading = true;
+      if (!silent) _loading = true;
       _error = null;
     });
     final res = await widget.api.listBeans(
@@ -59,6 +66,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       origin: _origin,
       process: _process,
       roastLevel: _roastLevel,
+      limit: _pageSize,
     );
     if (!mounted) return;
     setState(() {
@@ -66,6 +74,28 @@ class _ExploreScreenState extends State<ExploreScreen> {
       if (res.ok) {
         _beans = res.data!;
         _total = (res.meta?['total'] as num?)?.toInt() ?? _beans.length;
+      } else {
+        _error = res.error;
+      }
+    });
+  }
+
+  Future<void> _loadMore() async {
+    setState(() => _loadingMore = true);
+    final res = await widget.api.listBeans(
+      search: _searchController.text.trim(),
+      origin: _origin,
+      process: _process,
+      roastLevel: _roastLevel,
+      limit: _pageSize,
+      offset: _beans.length,
+    );
+    if (!mounted) return;
+    setState(() {
+      _loadingMore = false;
+      if (res.ok) {
+        _beans = [..._beans, ...res.data!];
+        _total = (res.meta?['total'] as num?)?.toInt() ?? _total;
       } else {
         _error = res.error;
       }
@@ -86,9 +116,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search beans, roasters, origins…',
-                prefixIcon: Icon(Icons.search, color: Palette.creamDim),
+                prefixIcon: const Icon(Icons.search, color: Palette.creamDim),
+                suffixIcon: _searchController.text.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close,
+                            size: 18, color: Palette.creamDim),
+                        tooltip: 'Clear search',
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {});
+                          _fetch();
+                        },
+                      ),
               ),
             ),
           ),
@@ -144,7 +186,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }) {
     final selectedLabel = value == null
         ? label
-        : options.firstWhere((o) => o.$1 == value, orElse: () => (value, value)).$2;
+        : '$label: ${options.firstWhere((o) => o.$1 == value, orElse: () => (value, value)).$2}';
     return PopupMenuButton<String?>(
       color: Palette.periWell,
       onSelected: (v) => onChanged(v == '' ? null : v),
@@ -185,18 +227,29 @@ class _ExploreScreenState extends State<ExploreScreen> {
             style: TextStyle(color: Palette.creamDim)),
       );
     }
+    final hasMore = _beans.length < _total;
     return RefreshIndicator(
       color: Palette.blush,
-      onRefresh: _fetch,
+      onRefresh: () => _fetch(silent: true),
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: _beans.length + 1,
+        itemCount: _beans.length + 1 + (hasMore ? 1 : 0),
         separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, i) {
           if (i == 0) {
             return Text(
-              '$_total bean${_total == 1 ? '' : 's'}',
+              '$_total bean${_total == 1 ? '' : 's'} · showing ${_beans.length}',
               style: const TextStyle(color: Palette.creamDim, fontSize: 13),
+            );
+          }
+          if (i == _beans.length + 1) {
+            return Center(
+              child: OutlinedButton(
+                onPressed: _loadingMore ? null : _loadMore,
+                child: Text(_loadingMore
+                    ? 'Loading…'
+                    : 'Load more (${_total - _beans.length} left)'),
+              ),
             );
           }
           final bean = _beans[i - 1];

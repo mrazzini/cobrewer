@@ -21,7 +21,6 @@ class JournalScreen extends StatefulWidget {
 
 class _JournalScreenState extends State<JournalScreen> {
   List<BrewLog> _brews = [];
-  Map<String, Bean> _beans = {};
   bool _loading = true;
   String? _error;
 
@@ -37,32 +36,23 @@ class _JournalScreenState extends State<JournalScreen> {
     if (widget.refreshToken != oldWidget.refreshToken) _fetch();
   }
 
-  Future<void> _fetch() async {
+  /// [silent] keeps the current list on screen (pull-to-refresh) instead of
+  /// swapping it for a full-screen spinner. Brews embed their bean summary,
+  /// so a single request is enough.
+  Future<void> _fetch({bool silent = false}) async {
     setState(() {
-      _loading = true;
+      if (!silent) _loading = true;
       _error = null;
     });
     final res = await widget.api.listBrews();
     if (!mounted) return;
-    if (!res.ok) {
-      setState(() {
-        _loading = false;
-        _error = res.error;
-      });
-      return;
-    }
-    final brews = res.data!;
-    final beanIds = brews.map((b) => b.beanId).toSet();
-    final beanResults =
-        await Future.wait(beanIds.map((id) => widget.api.getBean(id)));
-    if (!mounted) return;
     setState(() {
       _loading = false;
-      _brews = brews;
-      _beans = {
-        for (final r in beanResults)
-          if (r.ok) r.data!.id: r.data!,
-      };
+      if (res.ok) {
+        _brews = res.data!;
+      } else {
+        _error = res.error;
+      }
     });
   }
 
@@ -74,7 +64,7 @@ class _JournalScreenState extends State<JournalScreen> {
             style: TextStyle(fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
-            onPressed: _fetch,
+            onPressed: () => _fetch(),
             icon: const Icon(Icons.refresh, color: Palette.creamDim),
             tooltip: 'Refresh',
           ),
@@ -109,7 +99,7 @@ class _JournalScreenState extends State<JournalScreen> {
     }
     return RefreshIndicator(
       color: Palette.blush,
-      onRefresh: _fetch,
+      onRefresh: () => _fetch(silent: true),
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: _brews.length,
@@ -120,7 +110,7 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   Widget _brewCard(BrewLog brew) {
-    final bean = _beans[brew.beanId];
+    final bean = brew.bean;
     final when = brew.timestamp.toLocal();
     final date =
         '${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';

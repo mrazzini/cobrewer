@@ -66,9 +66,11 @@ class BeanCard extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    _tag(roastLabel(bean.roastLevel)),
+                    if (bean.roastLevel != null)
+                      _tag(roastLabel(bean.roastLevel)),
                     if (bean.process != null) _tag(processLabel(bean.process)),
                     ...bean.tastingNotes.take(3).map(_tag),
+                    if (!bean.isVerified) _tag('community', muted: true),
                   ],
                 ),
               ],
@@ -79,16 +81,17 @@ class BeanCard extends StatelessWidget {
     );
   }
 
-  Widget _tag(String text) {
+  Widget _tag(String text, {bool muted = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: Palette.periWell,
+        color: muted ? Palette.periWell.withValues(alpha: 0.5) : Palette.periWell,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 11.5, color: Palette.cream),
+        style: TextStyle(
+            fontSize: 11.5, color: muted ? Palette.creamDim : Palette.cream),
       ),
     );
   }

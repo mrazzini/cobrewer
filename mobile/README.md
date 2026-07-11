@@ -1,16 +1,50 @@
-# cobrewer_mobile
+# Cobrewer Mobile
 
-A new Flutter project.
+Flutter client for Cobrewer — the coffee brewing co-pilot. Same four flows as
+the web app (Explore, Dial-in, Journal, Profile) against the same FastAPI
+backend.
 
-## Getting Started
+## Run it
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
 
-A few resources to get you started if this is your first Flutter project:
+# Against a local backend (DEBUG=true dev mode, no secrets needed):
+flutter run
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+# Android emulator — 10.0.2.2 reaches the host machine:
+flutter run --dart-define=API_URL=http://10.0.2.2:8000
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Quick preview in a browser:
+flutter run -d web-server
+```
+
+## Build-time configuration (`--dart-define`)
+
+| Define     | Default                 | Purpose                                                          |
+| ---------- | ----------------------- | ---------------------------------------------------------------- |
+| `API_URL`  | `http://localhost:8000` | Base URL of the Cobrewer backend.                                |
+| `DEV_USER` | `mobile`                | Identity sent as `X-Dev-User` in the backend's keyless dev mode. |
+
+The app always sends `X-Dev-User` until a Clerk token provider is wired into
+`ApiClient.tokenProvider`; the backend ignores the header outside dev mode.
+
+## Tests
+
+```bash
+flutter test        # unit + widget tests against a faked backend
+flutter analyze
+```
+
+## Layout
+
+```
+lib/
+├── main.dart          # bottom-nav shell: Explore, Dial-in, Journal, Profile
+├── theme.dart         # Cobrewer palette (periwinkle/blush) + Material theme
+├── constants.dart     # brewer/grinder keys mirroring the backend tables
+├── api/client.dart    # envelope-aware HTTP client
+├── models/models.dart # Dart mirrors of the backend Pydantic schemas
+├── screens/
+└── widgets/
+```

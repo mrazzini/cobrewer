@@ -29,16 +29,24 @@ class _DialInScreenState extends State<DialInScreen> {
   Bean? _bean;
   String _brewer = 'v60';
   String? _grinder;
+  bool _equipmentTouched = false;
 
   Recommendation? _rec;
   bool _loadingRec = false;
   String? _recError;
+
+  // Equipment + prefilled values the current recipe was computed with, so
+  // generated_by only says "rules" when the log actually matches the recipe.
+  String? _recBrewer;
+  String? _recGrinder;
+  Map<String, String> _prefill = const {};
 
   // Bean picker state (when no bean was carried over from Explore).
   final _beanSearchController = TextEditingController();
   Timer? _debounce;
   List<Bean> _beanResults = [];
   bool _searchingBeans = false;
+  String? _beanSearchError;
 
   // Brew log form.
   final _grindController = TextEditingController();
@@ -46,6 +54,7 @@ class _DialInScreenState extends State<DialInScreen> {
   final _yieldController = TextEditingController();
   final _tempController = TextEditingController();
   final _timeController = TextEditingController();
+  final _tdsController = TextEditingController();
   final _notesController = TextEditingController();
   int _rating = 0;
   bool _logging = false;
@@ -55,6 +64,21 @@ class _DialInScreenState extends State<DialInScreen> {
     super.initState();
     _bean = widget.initialBean;
     if (_bean == null) _searchBeans('');
+    _applyProfileDefaults();
+  }
+
+  /// Preselect the brewer/grinder saved in the profile — until the user
+  /// touches the dropdowns themselves.
+  Future<void> _applyProfileDefaults() async {
+    final res = await widget.api.getMe();
+    if (!mounted || !res.ok || _equipmentTouched) return;
+    final equipment = res.data!.equipment;
+    setState(() {
+      final g = matchGrinderKey(equipment);
+      if (g != null && _grinder == null) _grinder = g;
+      final b = matchBrewerKey(equipment);
+      if (b != null && _brewer == 'v60') _brewer = b;
+    });
   }
 
   @override
@@ -66,17 +90,22 @@ class _DialInScreenState extends State<DialInScreen> {
     _yieldController.dispose();
     _tempController.dispose();
     _timeController.dispose();
+    _tdsController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
   Future<void> _searchBeans(String query) async {
-    setState(() => _searchingBeans = true);
+    setState(() {
+      _searchingBeans = true;
+      _beanSearchError = null;
+    });
     final res = await widget.api.listBeans(search: query, limit: 15);
     if (!mounted) return;
     setState(() {
       _searchingBeans = false;
       _beanResults = res.data ?? [];
+      if (!res.ok) _beanSearchError = res.error ?? 'Could not load beans.';
     });
   }
 
@@ -119,25 +148,83 @@ class _DialInScreenState extends State<DialInScreen> {
     _tempController.text = p.waterTempC.toString();
     _timeController.text =
         ((p.brewTimeMinSeconds + p.brewTimeMaxSeconds) ~/ 2).toString();
+    _recBrewer = _brewer;
+    _recGrinder = _grinder;
+    _prefill = {
+      'grind': _grindController.text,
+      'dose': _doseController.text,
+      'yield': _yieldController.text,
+      'temp': _tempController.text,
+      'time': _timeController.text,
+    };
+  }
+
+  /// True only when equipment and every prefilled value still match the
+  /// fetched recipe — the generated_by label future ML training relies on.
+  bool get _logMatchesRecipe =>
+      _rec != null &&
+      _brewer == _recBrewer &&
+      _grinder == _recGrinder &&
+      _grindController.text == _prefill['grind'] &&
+      _doseController.text == _prefill['dose'] &&
+      _yieldController.text == _prefill['yield'] &&
+      _tempController.text == _prefill['temp'] &&
+      _timeController.text == _prefill['time'];
+
+  /// Parses a form value, accepting European decimal commas ("15,5").
+  /// Adds a message to [problems] when the text isn't a number or is
+  /// outside the given bounds; empty text is simply null.
+  double? _parseField(
+      TextEditingController controller, String boundsKey, List<String> problems) {
+    final raw = controller.text.trim();
+    if (raw.isEmpty) return null;
+    final bounds = brewBounds[boundsKey]!;
+    final n = double.tryParse(raw.replaceAll(',', '.'));
+    if (n == null) {
+      problems.add("${bounds.label} isn't a number");
+      return null;
+    }
+    if (n < bounds.min || n > bounds.max) {
+      problems.add(
+          '${bounds.label} must be between ${bounds.min}${bounds.unit} and ${bounds.max}${bounds.unit}');
+      return null;
+    }
+    return n;
   }
 
   Future<void> _logBrew() async {
     final bean = _bean;
     if (bean == null) return;
+
+    final problems = <String>[];
+    final grind = _parseField(_grindController, 'grind_setting', problems);
+    final dose = _parseField(_doseController, 'dose_g', problems);
+    final yieldG = _parseField(_yieldController, 'yield_g', problems);
+    final temp = _parseField(_tempController, 'water_temp_c', problems);
+    final time = _parseField(_timeController, 'brew_time_seconds', problems);
+    final tds = _parseField(_tdsController, 'tds', problems);
+    if (problems.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(problems.join('. '))),
+      );
+      return;
+    }
+
     setState(() => _logging = true);
     final res = await widget.api.logBrew({
       'bean_id': bean.id,
       'brewer': _brewer,
       if (_grinder != null) 'grinder': _grinder,
-      'grind_setting': double.tryParse(_grindController.text),
-      'dose_g': double.tryParse(_doseController.text),
-      'yield_g': double.tryParse(_yieldController.text),
-      'water_temp_c': double.tryParse(_tempController.text),
-      'brew_time_seconds': int.tryParse(_timeController.text),
+      'grind_setting': grind,
+      'dose_g': dose,
+      'yield_g': yieldG,
+      'water_temp_c': temp,
+      'brew_time_seconds': time?.round(),
+      'tds': tds,
       if (_rating > 0) 'rating': _rating,
       if (_notesController.text.trim().isNotEmpty)
         'notes': _notesController.text.trim(),
-      'generated_by': _rec != null ? 'rules' : 'manual',
+      'generated_by': _logMatchesRecipe ? 'rules' : 'manual',
     });
     if (!mounted) return;
     setState(() => _logging = false);
@@ -179,25 +266,56 @@ class _DialInScreenState extends State<DialInScreen> {
             ),
           ),
         ),
-        Expanded(
-          child: _searchingBeans
-              ? const Center(
-                  child: CircularProgressIndicator(color: Palette.blush))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _beanResults.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (context, i) {
-                    final bean = _beanResults[i];
-                    return BeanCard(
-                      bean: bean,
-                      compact: true,
-                      onTap: () => setState(() => _bean = bean),
-                    );
-                  },
-                ),
-        ),
+        Expanded(child: _beanPickerResults()),
       ],
+    );
+  }
+
+  Widget _beanPickerResults() {
+    if (_searchingBeans) {
+      return const Center(
+          child: CircularProgressIndicator(color: Palette.blush));
+    }
+    if (_beanSearchError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_beanSearchError!,
+                style: const TextStyle(color: Palette.creamDim)),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => _searchBeans(_beanSearchController.text),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_beanResults.isEmpty) {
+      final query = _beanSearchController.text.trim();
+      return Center(
+        child: Text(
+          query.isEmpty
+              ? 'No beans in the library yet.'
+              : 'Nothing matches “$query” — try another name.',
+          style: const TextStyle(color: Palette.creamDim),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: _beanResults.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      itemBuilder: (context, i) {
+        final bean = _beanResults[i];
+        return BeanCard(
+          bean: bean,
+          compact: true,
+          onTap: () => setState(() => _bean = bean),
+        );
+      },
     );
   }
 
@@ -229,7 +347,10 @@ class _DialInScreenState extends State<DialInScreen> {
             for (final b in brewers)
               DropdownMenuItem(value: b.key, child: Text(b.label)),
           ],
-          onChanged: (v) => setState(() => _brewer = v ?? _brewer),
+          onChanged: (v) => setState(() {
+            _brewer = v ?? _brewer;
+            _equipmentTouched = true;
+          }),
         ),
         const SizedBox(height: 10),
         DropdownButtonFormField<String?>(
@@ -242,7 +363,10 @@ class _DialInScreenState extends State<DialInScreen> {
             for (final g in grinders)
               DropdownMenuItem<String?>(value: g.key, child: Text(g.label)),
           ],
-          onChanged: (v) => setState(() => _grinder = v),
+          onChanged: (v) => setState(() {
+            _grinder = v;
+            _equipmentTouched = true;
+          }),
         ),
         const SizedBox(height: 14),
         FilledButton(
@@ -253,7 +377,7 @@ class _DialInScreenState extends State<DialInScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 10),
             child: Text(_recError!,
-                style: const TextStyle(color: Color(0xFFF87171))),
+                style: const TextStyle(color: Palette.blushDeep)),
           ),
         if (_rec?.parameters != null) ...[
           _sectionTitle('3 · Recipe'),
@@ -386,7 +510,13 @@ class _DialInScreenState extends State<DialInScreen> {
           ],
         ),
         const SizedBox(height: 10),
-        _numField(_timeController, 'Brew time (seconds)'),
+        Row(
+          children: [
+            Expanded(child: _numField(_timeController, 'Brew time (seconds)')),
+            const SizedBox(width: 10),
+            Expanded(child: _numField(_tdsController, 'TDS % (optional)')),
+          ],
+        ),
         const SizedBox(height: 10),
         TextField(
           controller: _notesController,

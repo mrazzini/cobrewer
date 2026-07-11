@@ -65,6 +65,12 @@ const brewLogJson = {
   'id': 'aaaa0d0c-1111-2222-3333-444455556666',
   'user_id': 'bbbb0d0c-1111-2222-3333-444455556666',
   'bean_id': '9b2f7c1e-1111-2222-3333-444455556666',
+  'bean': {
+    'id': '9b2f7c1e-1111-2222-3333-444455556666',
+    'name': 'Worka Chelbesa',
+    'roaster': 'September Coffee Co',
+    'origin': 'Ethiopia',
+  },
   'brewer': 'v60',
   'grinder': '1zpresso_jx_pro',
   'grind_setting': 66,
