@@ -128,4 +128,7 @@ NEXT_PUBLIC_API_URL=
 - No hardcoded strings — all config via environment variables
 
 ## Current Phase
-Week 1 — scaffold, infra, auth, bean model, seed data
+Prototype complete — full backend (auth, engine, endpoints, extraction, seed data) and frontend (explore, dial-in, journal, profile) working end-to-end. Now refining: deploy to Railway, production Clerk keys, bag-photo UI, journal filters. See README for the ordered list.
+
+## Local Dev Mode
+With DEBUG=true and no CLERK_SECRET_KEY, the backend accepts unauthenticated requests as a local dev identity (X-Dev-User header selects the user). Without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY the frontend skips ClerkProvider entirely. Zero secrets needed: `docker compose up --build`.
