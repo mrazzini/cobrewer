@@ -5,7 +5,7 @@ import type { Bean } from "@/lib/types";
 
 export default function BeanCard({ bean }: { bean: Bean }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-peri-deep/70 p-5 transition-colors hover:bg-peri-deep">
+    <div className="flex flex-col gap-3 rounded-xl bg-peri-deep/70 p-5 transition-[background-color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-peri-deep">
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-semibold leading-tight">{bean.name}</h3>

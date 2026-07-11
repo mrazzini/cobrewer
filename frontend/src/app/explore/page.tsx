@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import BeanCard from "@/components/BeanCard";
+import { BeanCardSkeleton } from "@/components/Skeleton";
 import { api } from "@/lib/api";
 import { PROCESSES, ROAST_LEVELS } from "@/lib/constants";
 import type { Bean } from "@/lib/types";
@@ -176,16 +177,20 @@ export default function ExplorePage() {
           {error}
         </p>
       )}
-      {loading && !error && <p className="text-cream-dim/80">Brewing up results…</p>}
       {!loading && !error && beans.length === 0 && (
-        <p className="text-cream-dim/80">No beans match those filters.</p>
+        <p className="text-cream-dim/80">
+          No beans match those filters —{" "}
+          <Link href="/add-bean" className="font-semibold text-blush hover:underline">
+            add one to the library
+          </Link>
+          .
+        </p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {!loading &&
-          beans.map((bean) => (
-            <BeanCard key={bean.id} bean={bean} />
-          ))}
+        {loading && !error
+          ? Array.from({ length: 6 }, (_, i) => <BeanCardSkeleton key={i} />)
+          : beans.map((bean) => <BeanCard key={bean.id} bean={bean} />)}
       </div>
 
       {!loading && !error && beans.length > 0 && (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import RatingStars from "@/components/RatingStars";
+import { BrewCardSkeleton } from "@/components/Skeleton";
 import { api } from "@/lib/api";
 import { brewerLabel, formatBrewTime, grinderLabel } from "@/lib/constants";
 import type { BrewLog } from "@/lib/types";
@@ -39,7 +40,13 @@ export default function JournalPage() {
           {error}
         </p>
       )}
-      {loading && !error && <p className="text-cream-dim/80">Pouring over your history…</p>}
+      {loading && !error && (
+        <div className="space-y-4">
+          {Array.from({ length: 3 }, (_, i) => (
+            <BrewCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
       {!loading && !error && brews.length === 0 && (
         <p className="text-cream-dim/80">
           No brews yet —{" "}

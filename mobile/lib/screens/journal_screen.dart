@@ -5,6 +5,7 @@ import '../constants.dart';
 import '../models/models.dart';
 import '../theme.dart';
 import '../widgets/rating_stars.dart';
+import '../widgets/skeletons.dart';
 
 class JournalScreen extends StatefulWidget {
   final ApiClient api;
@@ -76,8 +77,10 @@ class _JournalScreenState extends State<JournalScreen> {
 
   Widget _body() {
     if (_loading) {
-      return const Center(
-          child: CircularProgressIndicator(color: Palette.blush));
+      return SkeletonList(
+        count: 4,
+        itemBuilder: () => const BrewCardSkeleton(),
+      );
     }
     if (_error != null) {
       return Center(
@@ -104,7 +107,10 @@ class _JournalScreenState extends State<JournalScreen> {
         padding: const EdgeInsets.all(16),
         itemCount: _brews.length,
         separatorBuilder: (_, _) => const SizedBox(height: 10),
-        itemBuilder: (context, i) => _brewCard(_brews[i]),
+        itemBuilder: (context, i) => KeyedSubtree(
+          key: ValueKey(_brews[i].id),
+          child: _brewCard(_brews[i]),
+        ),
       ),
     );
   }

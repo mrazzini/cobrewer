@@ -18,7 +18,7 @@ export default function RatingStars({
             onClick={() => onChange(star === value ? null : star)}
             aria-label={star === value ? `Clear ${star}-star rating` : `Rate ${star} of 5`}
             aria-pressed={value != null && star <= value}
-            className={`text-xl transition-colors ${
+            className={`-my-1 px-1.5 py-1 text-xl transition-colors ${
               value != null && star <= value ? "text-blush" : "text-ink/40"
             } hover:text-blush-deep`}
           >

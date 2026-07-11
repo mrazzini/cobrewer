@@ -7,6 +7,7 @@ import '../constants.dart';
 import '../models/models.dart';
 import '../theme.dart';
 import '../widgets/bean_card.dart';
+import '../widgets/skeletons.dart';
 
 class ExploreScreen extends StatefulWidget {
   final ApiClient api;
@@ -215,8 +216,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _body() {
     if (_loading) {
-      return const Center(
-          child: CircularProgressIndicator(color: Palette.blush));
+      return SkeletonList(
+        count: 6,
+        itemBuilder: () => const BeanCardSkeleton(),
+      );
     }
     if (_error != null) {
       return _ErrorRetry(message: _error!, onRetry: _fetch);
@@ -253,7 +256,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
             );
           }
           final bean = _beans[i - 1];
-          return BeanCard(bean: bean, onTap: () => widget.onDialIn(bean));
+          return BeanCard(
+            key: ValueKey(bean.id),
+            bean: bean,
+            onTap: () => widget.onDialIn(bean),
+          );
         },
       ),
     );

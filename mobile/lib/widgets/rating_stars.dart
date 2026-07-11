@@ -30,7 +30,11 @@ class RatingStars extends StatelessWidget {
           onPressed: () => onChanged!(i + 1),
           icon: star,
           padding: EdgeInsets.zero,
-          constraints: BoxConstraints(minWidth: size + 8, minHeight: size + 8),
+          // 44pt minimum touch target even when the glyph is smaller.
+          constraints: BoxConstraints(
+            minWidth: size + 8 < 44 ? 44 : size + 8,
+            minHeight: size + 8 < 44 ? 44 : size + 8,
+          ),
           tooltip: '${i + 1} star${i == 0 ? '' : 's'}',
         );
       }),

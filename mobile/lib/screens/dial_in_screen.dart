@@ -311,6 +311,7 @@ class _DialInScreenState extends State<DialInScreen> {
       itemBuilder: (context, i) {
         final bean = _beanResults[i];
         return BeanCard(
+          key: ValueKey(bean.id),
           bean: bean,
           compact: true,
           onTap: () => setState(() => _bean = bean),

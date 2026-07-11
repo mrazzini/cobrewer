@@ -30,3 +30,39 @@ body {
   background: var(--color-blush);
   color: var(--color-ink);
 }
+
+/* Tailwind v4 preflight leaves buttons with cursor: default. */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Keyboard focus must be visible everywhere, not just on inputs. */
+:focus-visible {
+  outline: 2px solid var(--color-blush);
+  outline-offset: 2px;
+}
+
+/* Pressed feedback on anything clickable, without shifting layout. */
+button:active:not(:disabled),
+a:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  button:active:not(:disabled),
+  a:active {
+    transform: none;
+  }
+}
