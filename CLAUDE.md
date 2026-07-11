@@ -129,26 +129,3 @@ NEXT_PUBLIC_API_URL=
 
 ## Current Phase
 Week 1 — scaffold, infra, auth, bean model, seed data
-```
-
----
-
-## Step 3 — Your first Claude Code prompt
-
-Once CLAUDE.md is in place, paste this as your first message to Claude Code:
-```
-Read CLAUDE.md thoroughly. 
-
-Your first task is to scaffold the entire project structure for cobrewer exactly as specified in CLAUDE.md. 
-
-Do the following in order:
-1. Create the full directory structure for both backend and frontend
-2. Set up the FastAPI backend with config.py (pydantic-settings), main.py with lifespan, db/session.py with async SQLAlchemy, and db/models.py with all five database models
-3. Set up Alembic for migrations and generate the initial migration from the models
-4. Create requirements.txt with all dependencies pinned
-5. Scaffold the Next.js 15 frontend with TypeScript, Tailwind CSS, and Clerk auth installed
-6. Create .env.example files for both backend and frontend with all required variables
-7. Create a docker-compose.yml for local development with postgres and the two services
-8. Create .github/workflows/ci.yml that runs ruff + pytest on backend and tsc + eslint on frontend on every PR
-
-Do not create placeholder logic yet — focus on getting the structure, models, and wiring correct first. Ask me if anything in CLAUDE.md is ambiguous before proceeding.
