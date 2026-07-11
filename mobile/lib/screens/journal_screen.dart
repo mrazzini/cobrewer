@@ -9,7 +9,11 @@ import '../widgets/rating_stars.dart';
 class JournalScreen extends StatefulWidget {
   final ApiClient api;
 
-  const JournalScreen({super.key, required this.api});
+  /// Bumped by the shell whenever a brew is logged elsewhere, so the
+  /// journal refetches even though IndexedStack keeps it alive.
+  final int refreshToken;
+
+  const JournalScreen({super.key, required this.api, this.refreshToken = 0});
 
   @override
   State<JournalScreen> createState() => _JournalScreenState();
@@ -25,6 +29,12 @@ class _JournalScreenState extends State<JournalScreen> {
   void initState() {
     super.initState();
     _fetch();
+  }
+
+  @override
+  void didUpdateWidget(covariant JournalScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.refreshToken != oldWidget.refreshToken) _fetch();
   }
 
   Future<void> _fetch() async {

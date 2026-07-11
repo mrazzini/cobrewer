@@ -43,6 +43,9 @@ class _HomeShellState extends State<HomeShell> {
   /// Bean carried from Explore into Dial-in ("Dial this in" action).
   Bean? _dialInBean;
 
+  /// Incremented whenever a brew is logged so the journal refetches.
+  int _journalRefresh = 0;
+
   void _dialIn(Bean bean) {
     setState(() {
       _dialInBean = bean;
@@ -59,9 +62,12 @@ class _HomeShellState extends State<HomeShell> {
         // Rebuild the dial-in flow when a new bean is carried over.
         key: ValueKey(_dialInBean?.id ?? 'none'),
         initialBean: _dialInBean,
-        onLogged: () => setState(() => _tab = 2),
+        onLogged: () => setState(() {
+          _tab = 2;
+          _journalRefresh++;
+        }),
       ),
-      JournalScreen(api: widget.api),
+      JournalScreen(api: widget.api, refreshToken: _journalRefresh),
       ProfileScreen(api: widget.api),
     ];
 
