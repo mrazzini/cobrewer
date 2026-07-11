@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1 import router as v1_router
 from app.db.session import engine
@@ -31,6 +34,25 @@ app.add_middleware(
 )
 
 app.include_router(v1_router)
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    # Keep every response in the {data, error, meta} envelope.
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"data": None, "error": str(exc.detail), "meta": None},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"data": None, "error": "Validation error", "meta": {"details": exc.errors()}},
+    )
 
 
 @app.get("/health")
