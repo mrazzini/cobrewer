@@ -172,7 +172,7 @@ def get_recommendation(
         if click_delta or temp_delta:
             notes.append(
                 f"{roast_key.replace('_', '-')} roast: "
-                f"{click_delta:+d} clicks, {temp_delta:+.1f}°C"
+                f"{click_delta:+d} C40 clicks, {temp_delta:+.1f}°C"
             )
     else:
         confidence -= 0.15
@@ -183,7 +183,7 @@ def get_recommendation(
         process_delta = PROCESS_ADJUSTMENTS[process_key]
         clicks += process_delta
         if process_delta:
-            notes.append(f"{process_key.replace('_', ' ')} process: {process_delta:+d} clicks")
+            notes.append(f"{process_key.replace('_', ' ')} process: {process_delta:+d} C40 clicks")
     else:
         confidence -= 0.1
         notes.append("Process unknown — assuming washed")

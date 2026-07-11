@@ -10,6 +10,7 @@ os.environ["DATABASE_URL"] = os.environ.get(
 
 import httpx  # noqa: E402
 import pytest  # noqa: E402
+from sqlalchemy import text  # noqa: E402
 
 from app.db.models import Base  # noqa: E402
 from app.db.session import engine  # noqa: E402
@@ -19,6 +20,8 @@ from app.main import app  # noqa: E402
 @pytest.fixture(autouse=True)
 async def db():
     async with engine.begin() as conn:
+        # Mirrors migration 002 — the test schema is built via create_all.
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield

@@ -27,17 +27,18 @@ async def list_beans(
 ) -> ApiResponse:
     query = select(Bean)
     if search:
-        pattern = f"%{search}%"
+        # unaccent() folds diacritics so "atitlan" matches "Atitlán".
+        pattern = func.unaccent(f"%{search}%")
         query = query.where(
             or_(
-                Bean.name.ilike(pattern),
-                Bean.roaster.ilike(pattern),
-                Bean.origin.ilike(pattern),
-                Bean.variety.ilike(pattern),
+                func.unaccent(Bean.name).ilike(pattern),
+                func.unaccent(Bean.roaster).ilike(pattern),
+                func.unaccent(Bean.origin).ilike(pattern),
+                func.unaccent(Bean.variety).ilike(pattern),
             )
         )
     if origin:
-        query = query.where(Bean.origin.ilike(f"%{origin}%"))
+        query = query.where(func.unaccent(Bean.origin).ilike(func.unaccent(f"%{origin}%")))
     if process:
         query = query.where(func.lower(Bean.process) == process.lower())
     if roast_level:

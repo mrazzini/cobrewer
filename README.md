@@ -60,7 +60,9 @@ cd frontend
 npm install
 npm run dev
 
-# Backend tests (uses cobrewer_test database, or set TEST_DATABASE_URL)
+# Backend tests — create the throwaway test database once, then run pytest
+# (or point TEST_DATABASE_URL at an existing empty database)
+createdb -h localhost -U postgres cobrewer_test
 cd backend && pytest
 
 # Mobile (Flutter 3.32+; API URL defaults to http://localhost:8000)
