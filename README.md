@@ -8,6 +8,7 @@ Specialty coffee brewing co-pilot that helps you dial in brew parameters based o
 |-------|------|
 | Backend | FastAPI, async SQLAlchemy, Alembic, Pydantic v2 |
 | Frontend | Next.js 15 (App Router), Tailwind CSS, TypeScript |
+| Mobile | Flutter (Android/iOS, plus a web target for local preview) |
 | Database | Neon PostgreSQL (async) |
 | Auth | Clerk (frontend + backend JWT validation) |
 | Storage | Cloudflare R2 (S3-compatible) |
@@ -16,64 +17,63 @@ Specialty coffee brewing co-pilot that helps you dial in brew parameters based o
 
 ## Current State
 
-The project scaffold is complete — directory structure, SQLAlchemy models (6 tables), Alembic initial migration, Pydantic schemas, FastAPI route stubs, and a Next.js frontend with Clerk auth wired in. All API endpoints return placeholder responses.
+The full prototype is working end-to-end:
 
-## Implementation Roadmap
+- **Backend** — beans CRUD with search/filters, rule-based recommendation engine (brewer baselines + roast/process adjustments, grind normalised to Comandante C40 clicks and converted per grinder), brew logging scoped to the authenticated user, Clerk JWT auth with a keyless dev mode, bag-photo extraction (gpt-4o-mini vision + R2 upload, 3 free credits), 200-bean seed library, 25 tests.
+- **Frontend** — branded landing, Explore (search + filters), Dial-in (bean → equipment → recipe → log the brew), Journal, and Profile (equipment + AI credits). Works with or without Clerk keys.
+- **Mobile** — Flutter app (`mobile/`) with the same four flows against the same API: Explore, Dial-in, Journal, Profile. 17 unit/widget tests against a faked backend.
+- **Infra** — docker-compose stack, CI running lint + tests (with Postgres service) + typecheck + Flutter analyze/test.
 
-### Phase 1 — Core Backend (next up)
+## Next Up (refinement phase)
 
-1. **Beans CRUD endpoints** — Wire `list_beans`, `get_bean`, `create_bean` in `backend/app/api/v1/beans.py` with real SQLAlchemy queries. This is the foundation; everything else depends on beans existing in the DB.
-
-2. **Rule-based Recommendation Engine** — Implement the logic in `backend/app/services/recommendation_engine.py` using the rules defined in CLAUDE.md (V60, espresso, French Press base parameters, roast-level adjustments, process adjustments, Comandante C40 click normalization).
-
-3. **Clerk JWT auth middleware** — Create a FastAPI dependency that validates the Clerk JWT from the `Authorization` header, resolves `clerk_id` → `User`, and auto-creates users on first request. Protect all write endpoints.
-
-4. **Brews CRUD endpoints** — Implement `POST /api/v1/brews` (log a brew) and `GET /api/v1/brews` (brew history) in `backend/app/api/v1/brews.py`.
-
-5. **Recommendations endpoint** — Wire `GET /api/v1/recommendations` to call the recommendation engine and return parameters.
-
-6. **Seed script** — Finish `backend/scripts/seed_beans.py` to load ~200 beans from a CSV so the app has real data.
-
-### Phase 2 — Frontend Features
-
-7. **Explore page** (`/explore`) — Bean discovery with search, origin/process/roast filters, and card-based results.
-
-8. **Dial-in page** (`/dial-in`) — Select a bean + equipment, get recommendations, and log a brew in one flow.
-
-9. **Journal page** (`/journal`) — Brew history with ratings, sortable/filterable.
-
-10. **Profile page** (`/profile`) — Equipment setup (grinder, brewer) saved to `user_equipment`.
-
-11. **Landing page** — Replace placeholder with branded hero, feature highlights, and sign-in CTA.
-
-### Phase 3 — AI & Polish
-
-12. **Bag photo extraction** — Implement `POST /api/v1/extract/bag-photo` using OpenAI vision to parse bean details from a photo. Enforce the 3-free-extraction credit limit.
-
-13. **Cloudflare R2 storage** — Wire `backend/app/services/storage_service.py` for image uploads.
-
-14. **docker-compose.yml** — Local dev setup with Postgres + backend + frontend.
-
-15. **CI/CD hardening** — Add pytest coverage, pre-commit hooks, deploy workflow to Railway.
-
-16. **ML prep** — Once `brew_logs` reaches ~5000 rows, train a model to replace the rule-based engine.
+1. **Deploy** — `.github/workflows/deploy.yml` to Railway; restrict CORS; set real env vars.
+2. **Clerk in production** — create the Clerk app, add keys, verify JWT flow end to end.
+3. **Bag-photo UI** — frontend flow for `POST /api/v1/extract/bag-photo` (backend is done).
+4. **Journal filters** — sort/filter brew history by bean, brewer, rating.
+5. **Equipment-aware defaults** — Dial-in should preselect the grinder saved in Profile.
+6. **CI/CD hardening** — pytest coverage, pre-commit hooks.
+7. **ML prep** — once `brew_logs` reaches ~5000 rows, train a model to replace the rule-based engine.
 
 ## Local Development
 
+Zero secrets needed for local dev: with `DEBUG=true` and no Clerk key, the backend substitutes a local dev identity (optionally set per-request with an `X-Dev-User` header) and the frontend renders without auth.
+
 ```bash
-# Backend
+docker compose up --build
+# frontend http://localhost:3000 · API http://localhost:8000 (docs at /docs)
+```
+
+Or run the pieces directly:
+
+```bash
+# Backend (needs a local Postgres with a `cobrewer` database)
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # fill in values
+cp .env.example .env  # defaults work for local dev; set DEBUG=true
+alembic upgrade head
+python -m scripts.seed_beans
 uvicorn app.main:app --reload
 
 # Frontend
 cd frontend
 npm install
-cp .env.example .env.local  # fill in values
 npm run dev
+
+# Backend tests (uses cobrewer_test database, or set TEST_DATABASE_URL)
+cd backend && pytest
+
+# Mobile (Flutter 3.32+; API URL defaults to http://localhost:8000)
+cd mobile
+flutter pub get
+flutter run                # device/emulator — use --dart-define=API_URL=http://10.0.2.2:8000 on the Android emulator
+flutter run -d web-server  # quick preview in a browser
+flutter test
 ```
+
+The mobile app reuses the backend's keyless dev mode: it always sends `X-Dev-User`
+(override the identity with `--dart-define=DEV_USER=yourname`), and attaches a Clerk
+bearer token instead once a token provider is wired in.
 
 ## Environment Variables
 

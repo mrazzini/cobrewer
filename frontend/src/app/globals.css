@@ -1,15 +1,32 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --green-accent: #4ade80;
-  --green-accent-dark: #16a34a;
-  --amber: #f59e0b;
+/*
+ * Cobrewer palette — retro, flat, friendly.
+ * Two colors carry everything: periwinkle canvas, blush pink accent.
+ */
+@theme {
+  --color-peri: #7185bf;
+  --color-peri-deep: #6377b1;
+  --color-peri-well: #57699f;
+  --color-blush: #ed99a4;
+  --color-blush-deep: #e8858f;
+  --color-cream: #f7f4ed;
+  --color-cream-dim: #d9def1;
+  --color-ink: #333a63;
+}
+
+@theme inline {
+  --font-sans: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-shrikhand), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-peri);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-blush);
+  color: var(--color-ink);
 }

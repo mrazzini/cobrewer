@@ -5,8 +5,8 @@ cobrewer is a specialty coffee brewing co-pilot that helps users dial in their b
 
 ## Brand
 - Name: Cobrewer
-- Theme: Cobra — dark, sleek, precise. Friendly not scary.
-- Colors: background #0a0a0a, green accent #4ade80 → #16a34a, amber #f59e0b, white text
+- Theme: Retro, flat, playful — full-bleed color blocks, bold uppercase headings, no borders or gradients
+- Colors (two-color palette): periwinkle #7185BF canvas (#6377B1 cards, #57699F wells), blush pink #ED99A4 as the single accent (buttons, stars, active states, the recipe card); cream #F7F4ED text on periwinkle, ink #333A63 text on pink
 - Tone: knowledgeable coffee friend, not corporate
 
 ## Tech Stack
@@ -63,6 +63,17 @@ cobrewer/
     │       └── types.ts
     ├── Dockerfile
     └── package.json
+└── mobile/                # Flutter app (Android/iOS + web preview), same API
+    ├── lib/
+    │   ├── main.dart      # bottom-nav shell: Explore, Dial-in, Journal, Profile
+    │   ├── theme.dart     # cobra dark theme
+    │   ├── constants.dart # brewer/grinder keys mirroring backend tables
+    │   ├── api/client.dart    # envelope-aware client, X-Dev-User dev mode
+    │   ├── models/models.dart
+    │   ├── screens/
+    │   └── widgets/
+    ├── test/              # unit + widget tests against a faked backend
+    └── pubspec.yaml       # deps: http only
 
 ## Database Models (design for ML future)
 - users: id, clerk_id, display_name, created_at
@@ -128,27 +139,7 @@ NEXT_PUBLIC_API_URL=
 - No hardcoded strings — all config via environment variables
 
 ## Current Phase
-Week 1 — scaffold, infra, auth, bean model, seed data
-```
+Prototype complete — full backend (auth, engine, endpoints, extraction, seed data), frontend (explore, dial-in, journal, profile), and Flutter mobile app with the same four flows, all working end-to-end. Now refining: deploy to Railway, production Clerk keys, bag-photo UI, journal filters. See README for the ordered list.
 
----
-
-## Step 3 — Your first Claude Code prompt
-
-Once CLAUDE.md is in place, paste this as your first message to Claude Code:
-```
-Read CLAUDE.md thoroughly. 
-
-Your first task is to scaffold the entire project structure for cobrewer exactly as specified in CLAUDE.md. 
-
-Do the following in order:
-1. Create the full directory structure for both backend and frontend
-2. Set up the FastAPI backend with config.py (pydantic-settings), main.py with lifespan, db/session.py with async SQLAlchemy, and db/models.py with all five database models
-3. Set up Alembic for migrations and generate the initial migration from the models
-4. Create requirements.txt with all dependencies pinned
-5. Scaffold the Next.js 15 frontend with TypeScript, Tailwind CSS, and Clerk auth installed
-6. Create .env.example files for both backend and frontend with all required variables
-7. Create a docker-compose.yml for local development with postgres and the two services
-8. Create .github/workflows/ci.yml that runs ruff + pytest on backend and tsc + eslint on frontend on every PR
-
-Do not create placeholder logic yet — focus on getting the structure, models, and wiring correct first. Ask me if anything in CLAUDE.md is ambiguous before proceeding.
+## Local Dev Mode
+With DEBUG=true and no CLERK_SECRET_KEY, the backend accepts unauthenticated requests as a local dev identity (X-Dev-User header selects the user). Without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY the frontend skips ClerkProvider entirely. The Flutter app always sends X-Dev-User (identity via --dart-define=DEV_USER) until a Clerk token provider is wired in. Zero secrets needed: `docker compose up --build`.

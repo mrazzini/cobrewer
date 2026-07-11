@@ -5,16 +5,16 @@ Revises: None
 Create Date: 2026-02-26
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision: str = "001"
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -39,7 +39,9 @@ def upgrade() -> None:
         sa.Column("tasting_notes", postgresql.ARRAY(sa.Text), nullable=True),
         sa.Column("cupping_score", sa.Float, nullable=True),
         sa.Column("source_url", sa.Text, nullable=True),
-        sa.Column("created_by", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=True),
+        sa.Column(
+            "created_by", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=True
+        ),
         sa.Column("is_verified", sa.Boolean, default=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
@@ -47,8 +49,12 @@ def upgrade() -> None:
     op.create_table(
         "brew_logs",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
-        sa.Column("bean_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("beans.id"), nullable=False),
+        sa.Column(
+            "user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False
+        ),
+        sa.Column(
+            "bean_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("beans.id"), nullable=False
+        ),
         sa.Column("brewer", sa.String(100), nullable=False),
         sa.Column("grinder", sa.String(100), nullable=True),
         sa.Column("grind_setting", sa.Float, nullable=True),
@@ -66,7 +72,9 @@ def upgrade() -> None:
     op.create_table(
         "recommendations",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("bean_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("beans.id"), nullable=False),
+        sa.Column(
+            "bean_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("beans.id"), nullable=False
+        ),
         sa.Column("brewer", sa.String(100), nullable=False),
         sa.Column("grinder", sa.String(100), nullable=True),
         sa.Column("parameters", postgresql.JSONB, nullable=True),
@@ -78,7 +86,9 @@ def upgrade() -> None:
     op.create_table(
         "user_equipment",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
+        sa.Column(
+            "user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False
+        ),
         sa.Column("equipment_type", sa.String(50), nullable=False),
         sa.Column("brand", sa.String(255), nullable=True),
         sa.Column("model", sa.String(255), nullable=True),
@@ -88,7 +98,13 @@ def upgrade() -> None:
     op.create_table(
         "user_ai_credits",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), unique=True, nullable=False),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id"),
+            unique=True,
+            nullable=False,
+        ),
         sa.Column("extractions_used", sa.Integer, default=0),
         sa.Column("extractions_limit", sa.Integer, default=3),
     )

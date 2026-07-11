@@ -38,12 +38,33 @@ export interface BrewLog {
   timestamp: string;
 }
 
+export interface GrindSetting {
+  grinder: string | null;
+  value: number;
+  unit: string;
+  reference: string;
+  converted: boolean;
+}
+
+export interface RecommendationParameters {
+  brewer: string;
+  grind_setting: GrindSetting;
+  grind_setting_c40_clicks: number;
+  dose_g: number;
+  ratio: string;
+  yield_g: number;
+  water_temp_c: number;
+  brew_time_seconds: { min: number; max: number };
+  pressure_bar?: number;
+  notes: string[];
+}
+
 export interface Recommendation {
   id: string;
   bean_id: string;
   brewer: string;
   grinder: string | null;
-  parameters: Record<string, unknown> | null;
+  parameters: RecommendationParameters | null;
   generated_by: string;
   confidence_score: number | null;
   created_at: string;
@@ -61,4 +82,14 @@ export interface Equipment {
   brand: string | null;
   model: string | null;
   burr_type: string | null;
+}
+
+export interface AiCredits {
+  extractions_used: number;
+  extractions_limit: number;
+}
+
+export interface UserProfile extends User {
+  equipment: Equipment[];
+  ai_credits: AiCredits;
 }

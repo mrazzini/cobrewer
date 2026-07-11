@@ -58,8 +58,12 @@ class BrewLog(Base):
     __tablename__ = "brew_logs"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    bean_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("beans.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    )
+    bean_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("beans.id"), nullable=False
+    )
     brewer: Mapped[str] = mapped_column(String(100), nullable=False)
     grinder: Mapped[str | None] = mapped_column(String(100))
     grind_setting: Mapped[float | None] = mapped_column(Float)
@@ -81,7 +85,9 @@ class Recommendation(Base):
     __tablename__ = "recommendations"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    bean_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("beans.id"), nullable=False)
+    bean_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("beans.id"), nullable=False
+    )
     brewer: Mapped[str] = mapped_column(String(100), nullable=False)
     grinder: Mapped[str | None] = mapped_column(String(100))
     parameters: Mapped[dict | None] = mapped_column(JSONB)
@@ -96,7 +102,9 @@ class UserEquipment(Base):
     __tablename__ = "user_equipment"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    )
     equipment_type: Mapped[str] = mapped_column(String(50), nullable=False)
     brand: Mapped[str | None] = mapped_column(String(255))
     model: Mapped[str | None] = mapped_column(String(255))
@@ -109,7 +117,9 @@ class UserAiCredits(Base):
     __tablename__ = "user_ai_credits"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+    )
     extractions_used: Mapped[int] = mapped_column(Integer, default=0)
     extractions_limit: Mapped[int] = mapped_column(Integer, default=3)
 
