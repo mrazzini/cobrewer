@@ -5,12 +5,11 @@ import { useEffect, useState } from "react";
 
 import RatingStars from "@/components/RatingStars";
 import { api } from "@/lib/api";
-import { formatBrewTime } from "@/lib/constants";
-import type { Bean, BrewLog } from "@/lib/types";
+import { brewerLabel, formatBrewTime, grinderLabel } from "@/lib/constants";
+import type { BrewLog } from "@/lib/types";
 
 export default function JournalPage() {
   const [brews, setBrews] = useState<BrewLog[]>([]);
-  const [beans, setBeans] = useState<Record<string, Bean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,20 +18,9 @@ export default function JournalPage() {
       const res = await api.get<BrewLog[]>("/api/v1/brews");
       if (res.error) {
         setError(res.error);
-        setLoading(false);
-        return;
+      } else {
+        setBrews(res.data ?? []);
       }
-      const logs = res.data ?? [];
-      setBrews(logs);
-      const beanIds = [...new Set(logs.map((b) => b.bean_id))];
-      const results = await Promise.all(
-        beanIds.map((id) => api.get<Bean>(`/api/v1/beans/${id}`)),
-      );
-      const byId: Record<string, Bean> = {};
-      for (const r of results) {
-        if (r.data) byId[r.data.id] = r.data;
-      }
-      setBeans(byId);
       setLoading(false);
     })();
   }, []);
@@ -63,48 +51,56 @@ export default function JournalPage() {
       )}
 
       <ul className="space-y-4">
-        {brews.map((brew) => {
-          const bean = beans[brew.bean_id];
-          return (
-            <li
-              key={brew.id}
-              className="rounded-xl bg-peri-deep/70 p-5"
-            >
-              <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold">{bean?.name ?? "Unknown bean"}</p>
-                  <p className="text-sm text-cream-dim">
-                    {[bean?.roaster, brew.brewer.replace("_", " ")].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
+        {brews.map((brew) => (
+          <li
+            key={brew.id}
+            className="rounded-xl bg-peri-deep/70 p-5"
+          >
+            <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="font-semibold">{brew.bean?.name ?? "Unknown bean"}</p>
+                <p className="text-sm text-cream-dim">
+                  {[brew.bean?.roaster, brewerLabel(brew.brewer)].filter(Boolean).join(" · ")}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                {brew.rating != null ? (
                   <RatingStars value={brew.rating} />
-                  <p className="text-xs text-cream-dim/80">
-                    {new Date(brew.timestamp).toLocaleDateString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-cream-dim">
-                {brew.grind_setting != null && <span>grind {brew.grind_setting}</span>}
-                {brew.dose_g != null && <span>{brew.dose_g} g in</span>}
-                {brew.yield_g != null && <span>{brew.yield_g} g out</span>}
-                {brew.water_temp_c != null && <span>{brew.water_temp_c}°C</span>}
-                {brew.brew_time_seconds != null && (
-                  <span>{formatBrewTime({ min: brew.brew_time_seconds, max: brew.brew_time_seconds })}</span>
+                ) : (
+                  <span className="text-xs text-cream-dim/60">unrated</span>
                 )}
-                {brew.tds != null && <span>TDS {brew.tds}%</span>}
-                {brew.generated_by && (
-                  <span className="text-cream-dim/60">via {brew.generated_by}</span>
-                )}
+                <p className="text-xs text-cream-dim/80">
+                  {new Date(brew.timestamp).toLocaleDateString(undefined, {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </p>
               </div>
-              {brew.notes && <p className="mt-2 text-sm italic text-cream">{brew.notes}</p>}
-            </li>
-          );
-        })}
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-cream-dim">
+              {brew.grind_setting != null && (
+                <span>
+                  grind {brew.grind_setting}
+                  {brew.grinder ? ` (${grinderLabel(brew.grinder)})` : ""}
+                </span>
+              )}
+              {brew.dose_g != null && <span>{brew.dose_g} g in</span>}
+              {brew.yield_g != null && <span>{brew.yield_g} g out</span>}
+              {brew.water_temp_c != null && <span>{brew.water_temp_c}°C</span>}
+              {brew.brew_time_seconds != null && (
+                <span>{formatBrewTime({ min: brew.brew_time_seconds, max: brew.brew_time_seconds })}</span>
+              )}
+              {brew.tds != null && <span>TDS {brew.tds}%</span>}
+              {brew.generated_by && (
+                <span className="text-cream-dim/60">
+                  {brew.generated_by === "rules" ? "from recipe" : "logged manually"}
+                </span>
+              )}
+            </div>
+            {brew.notes && <p className="mt-2 text-sm italic text-cream">{brew.notes}</p>}
+          </li>
+        ))}
       </ul>
     </main>
   );

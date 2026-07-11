@@ -5,7 +5,7 @@ export default function RatingStars({
   onChange,
 }: {
   value: number | null;
-  onChange?: (rating: number) => void;
+  onChange?: (rating: number | null) => void;
 }) {
   return (
     <div className="flex gap-0.5">
@@ -14,8 +14,10 @@ export default function RatingStars({
           <button
             key={star}
             type="button"
-            onClick={() => onChange(star)}
-            aria-label={`Rate ${star} of 5`}
+            // Clicking the current rating again clears it back to unrated.
+            onClick={() => onChange(star === value ? null : star)}
+            aria-label={star === value ? `Clear ${star}-star rating` : `Rate ${star} of 5`}
+            aria-pressed={value != null && star <= value}
             className={`text-xl transition-colors ${
               value != null && star <= value ? "text-blush" : "text-ink/40"
             } hover:text-blush-deep`}

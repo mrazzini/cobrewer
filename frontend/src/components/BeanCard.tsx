@@ -33,6 +33,14 @@ export default function BeanCard({ bean }: { bean: Bean }) {
             {roastLabel(bean.roast_level)}
           </span>
         )}
+        {!bean.is_verified && (
+          <span
+            className="rounded-full bg-cream/15 px-2.5 py-1 text-cream-dim"
+            title="User-submitted — not yet verified"
+          >
+            community
+          </span>
+        )}
       </div>
       {bean.tasting_notes && bean.tasting_notes.length > 0 && (
         <p className="text-sm italic text-cream/80">{bean.tasting_notes.join(" · ")}</p>

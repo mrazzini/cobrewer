@@ -6,8 +6,15 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 
 import RatingStars from "@/components/RatingStars";
 import { api } from "@/lib/api";
-import { BREWERS, GRINDERS, formatBrewTime, roastLabel } from "@/lib/constants";
-import type { Bean, BrewLog, Recommendation } from "@/lib/types";
+import {
+  BREW_BOUNDS,
+  BREWERS,
+  GRINDERS,
+  formatBrewTime,
+  roastLabel,
+  type BrewBoundsKey,
+} from "@/lib/constants";
+import type { Bean, BrewLog, Equipment, Recommendation, UserProfile } from "@/lib/types";
 
 const inputClass =
   "rounded-md border border-transparent bg-peri-well px-3 py-2 text-sm text-cream placeholder:text-cream-dim/70 focus:border-cream/60 focus:outline-none";
@@ -21,10 +28,47 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
   );
 }
 
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Best-effort map of free-text profile equipment onto an option key. */
+function matchEquipment(
+  rows: Equipment[],
+  type: string,
+  options: readonly { key: string; label: string }[],
+): string | null {
+  for (const row of rows.filter((r) => r.equipment_type === type)) {
+    const cand = norm(`${row.brand ?? ""}${row.model ?? ""}`);
+    if (cand.length < 2) continue;
+    // Prefer the longest label contained in the entry (so "1Zpresso JX-Pro"
+    // beats "1Zpresso JX"), then try the reverse for model-only entries.
+    const best = options
+      .filter((o) => cand.includes(norm(o.label)) || (cand.length >= 4 && norm(o.label).includes(cand)))
+      .sort((a, b) => norm(b.label).length - norm(a.label).length)[0];
+    if (best) return best.key;
+  }
+  return null;
+}
+
+const BREWER_HINTS: { key: string; hints: string[] }[] = [
+  { key: "espresso", hints: ["espresso"] },
+  { key: "v60", hints: ["v60", "pourover", "hario"] },
+  { key: "french_press", hints: ["frenchpress", "press"] },
+];
+
+function matchBrewer(rows: Equipment[]): string | null {
+  for (const row of rows.filter((r) => r.equipment_type === "brewer")) {
+    const cand = norm(`${row.brand ?? ""}${row.model ?? ""}`);
+    const hit = BREWER_HINTS.find((b) => b.hints.some((h) => cand.includes(h)));
+    if (hit) return hit.key;
+  }
+  return null;
+}
+
 function DialInContent() {
   const beanParam = useSearchParams().get("bean");
 
   const [bean, setBean] = useState<Bean | null>(null);
+  const [beanError, setBeanError] = useState<string | null>(null);
   const [beanSearch, setBeanSearch] = useState("");
   const [beanResults, setBeanResults] = useState<Bean[]>([]);
   const [brewer, setBrewer] = useState<string>("v60");
@@ -39,6 +83,7 @@ function DialInContent() {
   const [yieldG, setYieldG] = useState("");
   const [temp, setTemp] = useState("");
   const [time, setTime] = useState("");
+  const [tds, setTds] = useState("");
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
   const [logged, setLogged] = useState(false);
@@ -47,10 +92,31 @@ function DialInContent() {
   useEffect(() => {
     if (beanParam) {
       api.get<Bean>(`/api/v1/beans/${beanParam}`).then((res) => {
-        if (res.data) setBean(res.data);
+        if (res.data) {
+          setBean(res.data);
+          setBeanError(null);
+        } else {
+          setBeanError(
+            res.error
+              ? `That bean link didn't load (${res.error.toLowerCase()}) — it may have been removed. Pick a bean below instead.`
+              : "That bean link didn't load — pick a bean below instead.",
+          );
+        }
       });
     }
   }, [beanParam]);
+
+  // Default equipment from the profile — only until the user picks their own.
+  useEffect(() => {
+    api.get<UserProfile>("/api/v1/users/me").then((res) => {
+      const equipment = res.data?.equipment ?? [];
+      if (equipment.length === 0) return;
+      const g = matchEquipment(equipment, "grinder", GRINDERS);
+      if (g) setGrinder((cur) => cur || g);
+      const b = matchBrewer(equipment);
+      if (b) setBrewer((cur) => (cur === "v60" ? b : cur));
+    });
+  }, []);
 
   useEffect(() => {
     if (!beanSearch) {
@@ -89,21 +155,51 @@ function DialInContent() {
     setRecLoading(false);
   }, [bean, brewer, grinder]);
 
+  function parseField(key: BrewBoundsKey, raw: string, problems: string[]): number | null {
+    if (!raw.trim()) return null;
+    const bounds = BREW_BOUNDS[key];
+    // Accept European decimal commas ("15,5").
+    const n = Number(raw.trim().replace(",", "."));
+    if (Number.isNaN(n)) {
+      problems.push(`${bounds.label} isn't a number`);
+      return null;
+    }
+    if (n < bounds.min || n > bounds.max) {
+      problems.push(
+        `${bounds.label} must be between ${bounds.min}${bounds.unit} and ${bounds.max}${bounds.unit}`,
+      );
+      return null;
+    }
+    return n;
+  }
+
   async function logBrew() {
     if (!bean) return;
+    const problems: string[] = [];
+    const grindVal = parseField("grind_setting", grindSetting, problems);
+    const doseVal = parseField("dose_g", dose, problems);
+    const yieldVal = parseField("yield_g", yieldG, problems);
+    const tempVal = parseField("water_temp_c", temp, problems);
+    const timeVal = parseField("brew_time_seconds", time, problems);
+    const tdsVal = parseField("tds", tds, problems);
+    if (problems.length > 0) {
+      setError(problems.join(". "));
+      return;
+    }
     setLogging(true);
     setError(null);
     const res = await api.post<BrewLog>("/api/v1/brews", {
       bean_id: bean.id,
       brewer,
       grinder: grinder || null,
-      grind_setting: grindSetting ? Number(grindSetting) : null,
-      dose_g: dose ? Number(dose) : null,
-      yield_g: yieldG ? Number(yieldG) : null,
-      water_temp_c: temp ? Number(temp) : null,
-      brew_time_seconds: time ? Number(time) : null,
+      grind_setting: grindVal,
+      dose_g: doseVal,
+      yield_g: yieldVal,
+      water_temp_c: tempVal,
+      brew_time_seconds: timeVal == null ? null : Math.round(timeVal),
+      tds: tdsVal,
       rating,
-      notes: notes || null,
+      notes: notes.trim() || null,
       generated_by: rec ? "rules" : "manual",
     });
     if (res.error) {
@@ -113,6 +209,13 @@ function DialInContent() {
     }
     setLogging(false);
   }
+
+  // Any edit after a successful log re-arms the button (and prevents
+  // accidental double-logging of the identical brew).
+  const touch = (setter: (v: string) => void) => (v: string) => {
+    setter(v);
+    setLogged(false);
+  };
 
   const params = rec?.parameters ?? null;
 
@@ -151,11 +254,15 @@ function DialInContent() {
           </div>
         ) : (
           <div className="relative">
+            {beanError && (
+              <p className="mb-3 rounded-md bg-blush/20 p-3 text-sm text-cream">{beanError}</p>
+            )}
             <input
               type="search"
               value={beanSearch}
               onChange={(e) => setBeanSearch(e.target.value)}
               placeholder="Search the bean library…"
+              aria-label="Search the bean library"
               className={`${inputClass} w-full`}
             />
             {beanResults.length > 0 && (
@@ -168,6 +275,7 @@ function DialInContent() {
                         setBean(b);
                         setBeanSearch("");
                         setBeanResults([]);
+                        setBeanError(null);
                       }}
                     >
                       <span className="font-medium">{b.name}</span>
@@ -177,8 +285,20 @@ function DialInContent() {
                 ))}
               </ul>
             )}
+            {beanSearch && beanResults.length === 0 && (
+              <p className="mt-2 text-sm text-cream-dim/80">
+                Nothing matches “{beanSearch}” —{" "}
+                <Link href="/add-bean" className="font-semibold text-blush hover:underline">
+                  add it to the library
+                </Link>
+                .
+              </p>
+            )}
             <p className="mt-2 text-sm text-cream-dim/80">
-              or <Link href="/explore" className="font-semibold text-blush hover:underline">browse the library</Link>
+              or{" "}
+              <Link href="/explore" className="font-semibold text-blush hover:underline">
+                browse the library
+              </Link>
             </p>
           </div>
         )}
@@ -190,7 +310,12 @@ function DialInContent() {
           2 · Equipment
         </h2>
         <div className="flex flex-wrap gap-3">
-          <select value={brewer} onChange={(e) => setBrewer(e.target.value)} className={inputClass}>
+          <select
+            value={brewer}
+            onChange={(e) => setBrewer(e.target.value)}
+            aria-label="Brewer"
+            className={inputClass}
+          >
             {BREWERS.map((b) => (
               <option key={b.key} value={b.key}>
                 {b.label}
@@ -200,6 +325,7 @@ function DialInContent() {
           <select
             value={grinder}
             onChange={(e) => setGrinder(e.target.value)}
+            aria-label="Grinder"
             className={inputClass}
           >
             <option value="">Grinder (optional — defaults to C40 clicks)</option>
@@ -270,43 +396,53 @@ function DialInContent() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {(
               [
-                ["Grind setting", grindSetting, setGrindSetting],
-                ["Dose (g)", dose, setDose],
-                ["Yield (g)", yieldG, setYieldG],
-                ["Water temp (°C)", temp, setTemp],
-                ["Brew time (s)", time, setTime],
+                ["Grind setting", grindSetting, setGrindSetting, "grind_setting"],
+                ["Dose (g)", dose, setDose, "dose_g"],
+                ["Yield (g)", yieldG, setYieldG, "yield_g"],
+                ["Water temp (°C)", temp, setTemp, "water_temp_c"],
+                ["Brew time (s)", time, setTime, "brew_time_seconds"],
+                ["TDS (%)", tds, setTds, "tds"],
               ] as const
-            ).map(([label, value, setter]) => (
+            ).map(([label, value, setter, boundsKey]) => (
               <label key={label} className="flex flex-col gap-1 text-xs text-cream-dim/80">
                 {label}
                 <input
                   type="number"
                   step="any"
+                  min={BREW_BOUNDS[boundsKey].min}
+                  max={BREW_BOUNDS[boundsKey].max}
                   value={value}
-                  onChange={(e) => setter(e.target.value)}
+                  onChange={(e) => touch(setter)(e.target.value)}
                   className={inputClass}
                 />
               </label>
             ))}
-            <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
-              Rating
-              <RatingStars value={rating} onChange={setRating} />
-            </label>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="text-xs text-cream-dim/80">Rating</span>
+            <RatingStars
+              value={rating}
+              onChange={(r) => {
+                setRating(r);
+                setLogged(false);
+              }}
+            />
           </div>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => touch(setNotes)(e.target.value)}
             placeholder="Tasting notes, what you'd change…"
+            aria-label="Brew notes"
             rows={2}
             className={`${inputClass} mt-3 w-full`}
           />
           <div className="mt-4 flex items-center gap-3">
             <button
               onClick={logBrew}
-              disabled={logging}
+              disabled={logging || logged}
               className="rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:opacity-40"
             >
-              {logging ? "Saving…" : "Log brew"}
+              {logging ? "Saving…" : logged ? "Logged ✓" : "Log brew"}
             </button>
             {logged && (
               <span className="text-sm font-semibold text-blush">

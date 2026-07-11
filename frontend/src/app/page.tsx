@@ -4,14 +4,20 @@ const FEATURES = [
   {
     title: "Dial in any bean",
     body: "Origin, process and roast level turn into concrete grind clicks, dose, ratio and temperature — tuned to your grinder.",
+    href: "/dial-in",
+    cta: "Dial one in →",
   },
   {
     title: "Log every brew",
     body: "Rate your cups and keep notes. Your journal becomes the dataset that sharpens tomorrow's recommendations.",
+    href: "/journal",
+    cta: "Open the journal →",
   },
   {
     title: "Snap the bag",
     body: "Photograph a coffee bag and let AI extract the roaster, origin, variety and tasting notes for you.",
+    href: "/add-bean",
+    cta: "Add a bean →",
   },
 ];
 
@@ -22,7 +28,7 @@ export default function Home() {
         <span className="rounded-full bg-blush px-4 py-1 text-xs font-semibold uppercase tracking-widest text-ink">
           Anywhere, really
         </span>
-        <h1 className="font-display text-7xl tracking-tight">
+        <h1 className="font-display text-5xl tracking-tight sm:text-7xl">
           <span className="text-blush">Co</span>brewer
         </h1>
         <p className="max-w-xl text-lg text-cream-dim">
@@ -46,13 +52,19 @@ export default function Home() {
       </section>
 
       <section className="grid gap-4 pb-24 sm:grid-cols-3">
-        {FEATURES.map(({ title, body }) => (
+        {FEATURES.map(({ title, body, href, cta }) => (
           <div
             key={title}
-            className="rounded-xl bg-peri-deep/70 p-6"
+            className="flex flex-col rounded-xl bg-peri-deep/70 p-6"
           >
             <h2 className="mb-2 font-semibold uppercase tracking-wide text-blush">{title}</h2>
             <p className="text-sm leading-relaxed text-cream-dim">{body}</p>
+            <Link
+              href={href}
+              className="mt-3 text-sm font-semibold text-blush hover:underline"
+            >
+              {cta}
+            </Link>
           </div>
         ))}
       </section>

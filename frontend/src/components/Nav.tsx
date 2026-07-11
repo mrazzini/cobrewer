@@ -16,16 +16,16 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-peri-well/50 bg-peri/90 backdrop-blur">
-      <nav className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-4">
-        <Link href="/" className="font-display text-xl tracking-wide">
+      <nav className="mx-auto flex max-w-5xl items-center gap-2 px-3 py-3 sm:gap-6 sm:px-6 sm:py-4">
+        <Link href="/" className="font-display text-lg tracking-wide sm:text-xl">
           <span className="text-blush">Co</span>brewer
         </Link>
-        <div className="flex flex-1 items-center gap-1 text-sm">
+        <div className="flex flex-1 items-center gap-0.5 text-[13px] sm:gap-1 sm:text-sm">
           {LINKS.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className={`rounded-md px-3 py-1.5 transition-colors ${
+              className={`whitespace-nowrap rounded-md px-2 py-1.5 transition-colors sm:px-3 ${
                 pathname.startsWith(href)
                   ? "bg-blush font-semibold text-ink"
                   : "text-cream-dim hover:text-cream"
@@ -49,7 +49,7 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
             </SignedIn>
           </>
         ) : (
-          <span className="rounded-md border border-cream/40 px-2.5 py-1 text-xs uppercase tracking-wide text-cream/80">
+          <span className="hidden rounded-md border border-cream/40 px-2.5 py-1 text-xs uppercase tracking-wide text-cream/80 sm:inline-block">
             dev mode
           </span>
         )}
