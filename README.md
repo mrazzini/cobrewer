@@ -8,6 +8,7 @@ Specialty coffee brewing co-pilot that helps you dial in brew parameters based o
 |-------|------|
 | Backend | FastAPI, async SQLAlchemy, Alembic, Pydantic v2 |
 | Frontend | Next.js 15 (App Router), Tailwind CSS, TypeScript |
+| Mobile | Flutter (Android/iOS, plus a web target for local preview) |
 | Database | Neon PostgreSQL (async) |
 | Auth | Clerk (frontend + backend JWT validation) |
 | Storage | Cloudflare R2 (S3-compatible) |
@@ -20,7 +21,8 @@ The full prototype is working end-to-end:
 
 - **Backend** — beans CRUD with search/filters, rule-based recommendation engine (brewer baselines + roast/process adjustments, grind normalised to Comandante C40 clicks and converted per grinder), brew logging scoped to the authenticated user, Clerk JWT auth with a keyless dev mode, bag-photo extraction (gpt-4o-mini vision + R2 upload, 3 free credits), 200-bean seed library, 25 tests.
 - **Frontend** — branded landing, Explore (search + filters), Dial-in (bean → equipment → recipe → log the brew), Journal, and Profile (equipment + AI credits). Works with or without Clerk keys.
-- **Infra** — docker-compose stack, CI running lint + tests (with Postgres service) + typecheck.
+- **Mobile** — Flutter app (`mobile/`) with the same four flows against the same API: Explore, Dial-in, Journal, Profile. 17 unit/widget tests against a faked backend.
+- **Infra** — docker-compose stack, CI running lint + tests (with Postgres service) + typecheck + Flutter analyze/test.
 
 ## Next Up (refinement phase)
 
@@ -60,7 +62,18 @@ npm run dev
 
 # Backend tests (uses cobrewer_test database, or set TEST_DATABASE_URL)
 cd backend && pytest
+
+# Mobile (Flutter 3.32+; API URL defaults to http://localhost:8000)
+cd mobile
+flutter pub get
+flutter run                # device/emulator — use --dart-define=API_URL=http://10.0.2.2:8000 on the Android emulator
+flutter run -d web-server  # quick preview in a browser
+flutter test
 ```
+
+The mobile app reuses the backend's keyless dev mode: it always sends `X-Dev-User`
+(override the identity with `--dart-define=DEV_USER=yourname`), and attaches a Clerk
+bearer token instead once a token provider is wired in.
 
 ## Environment Variables
 

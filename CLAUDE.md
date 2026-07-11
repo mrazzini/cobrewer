@@ -63,6 +63,17 @@ cobrewer/
     │       └── types.ts
     ├── Dockerfile
     └── package.json
+└── mobile/                # Flutter app (Android/iOS + web preview), same API
+    ├── lib/
+    │   ├── main.dart      # bottom-nav shell: Explore, Dial-in, Journal, Profile
+    │   ├── theme.dart     # cobra dark theme
+    │   ├── constants.dart # brewer/grinder keys mirroring backend tables
+    │   ├── api/client.dart    # envelope-aware client, X-Dev-User dev mode
+    │   ├── models/models.dart
+    │   ├── screens/
+    │   └── widgets/
+    ├── test/              # unit + widget tests against a faked backend
+    └── pubspec.yaml       # deps: http only
 
 ## Database Models (design for ML future)
 - users: id, clerk_id, display_name, created_at
@@ -128,7 +139,7 @@ NEXT_PUBLIC_API_URL=
 - No hardcoded strings — all config via environment variables
 
 ## Current Phase
-Prototype complete — full backend (auth, engine, endpoints, extraction, seed data) and frontend (explore, dial-in, journal, profile) working end-to-end. Now refining: deploy to Railway, production Clerk keys, bag-photo UI, journal filters. See README for the ordered list.
+Prototype complete — full backend (auth, engine, endpoints, extraction, seed data), frontend (explore, dial-in, journal, profile), and Flutter mobile app with the same four flows, all working end-to-end. Now refining: deploy to Railway, production Clerk keys, bag-photo UI, journal filters. See README for the ordered list.
 
 ## Local Dev Mode
-With DEBUG=true and no CLERK_SECRET_KEY, the backend accepts unauthenticated requests as a local dev identity (X-Dev-User header selects the user). Without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY the frontend skips ClerkProvider entirely. Zero secrets needed: `docker compose up --build`.
+With DEBUG=true and no CLERK_SECRET_KEY, the backend accepts unauthenticated requests as a local dev identity (X-Dev-User header selects the user). Without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY the frontend skips ClerkProvider entirely. The Flutter app always sends X-Dev-User (identity via --dart-define=DEV_USER) until a Clerk token provider is wired in. Zero secrets needed: `docker compose up --build`.
