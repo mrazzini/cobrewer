@@ -22,7 +22,7 @@ export default function Home() {
         <span className="rounded-full bg-blush px-4 py-1 text-xs font-semibold uppercase tracking-widest text-ink">
           Anywhere, really
         </span>
-        <h1 className="text-6xl font-bold uppercase tracking-tight">
+        <h1 className="font-display text-7xl tracking-tight">
           <span className="text-blush">Co</span>brewer
         </h1>
         <p className="max-w-xl text-lg text-cream-dim">

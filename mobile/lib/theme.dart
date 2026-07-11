@@ -19,6 +19,7 @@ abstract final class Palette {
 ThemeData buildCobrewerTheme() {
   final base = ThemeData(
     brightness: Brightness.dark,
+    fontFamily: 'Baloo 2',
     colorScheme: const ColorScheme.dark(
       primary: Palette.blush,
       onPrimary: Palette.ink,
@@ -39,10 +40,11 @@ ThemeData buildCobrewerTheme() {
       elevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
+        fontFamily: 'Shrikhand',
         color: Palette.cream,
-        fontSize: 22,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 1.2,
+        fontSize: 24,
+        fontWeight: FontWeight.w400,
+        letterSpacing: 0.5,
       ),
     ),
     cardTheme: CardThemeData(

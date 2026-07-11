@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const baloo = localFont({
+  src: "../fonts/Baloo2-Variable.ttf",
+  variable: "--font-baloo",
+});
+
+const shrikhand = localFont({
+  src: "../fonts/Shrikhand-Regular.ttf",
+  variable: "--font-shrikhand",
+});
 
 import AuthBridge from "@/components/AuthBridge";
 import Nav from "@/components/Nav";
@@ -18,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const shell = (
-    <html lang="en">
+    <html lang="en" className={`${baloo.variable} ${shrikhand.variable}`}>
       <body>
         <Nav clerkEnabled={clerkEnabled} />
         {children}

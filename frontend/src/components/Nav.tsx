@@ -17,7 +17,7 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
   return (
     <header className="sticky top-0 z-50 border-b border-peri-well/50 bg-peri/90 backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-4">
-        <Link href="/" className="text-lg font-bold uppercase tracking-tight">
+        <Link href="/" className="font-display text-xl tracking-wide">
           <span className="text-blush">Co</span>brewer
         </Link>
         <div className="flex flex-1 items-center gap-1 text-sm">

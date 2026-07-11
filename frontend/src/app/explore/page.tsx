@@ -62,7 +62,7 @@ export default function ExplorePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-10">
-      <h1 className="mb-1 text-3xl font-bold uppercase tracking-tight">Explore Beans</h1>
+      <h1 className="font-display mb-1 text-3xl tracking-tight">Explore Beans</h1>
       <p className="mb-6 text-cream-dim">
         {total > 0 ? `${total} beans in the library` : "Find your next coffee"}
       </p>

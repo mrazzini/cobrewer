@@ -118,7 +118,7 @@ function DialInContent() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="mb-1 text-3xl font-bold uppercase tracking-tight">Dial In</h1>
+      <h1 className="font-display mb-1 text-3xl tracking-tight">Dial In</h1>
       <p className="mb-8 text-cream-dim">
         Pick a bean and your gear — get parameters, brew, then log how it went.
       </p>

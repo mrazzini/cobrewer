@@ -39,7 +39,7 @@ export default function JournalPage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="mb-1 text-3xl font-bold uppercase tracking-tight">Brew Journal</h1>
+      <h1 className="font-display mb-1 text-3xl tracking-tight">Brew Journal</h1>
       <p className="mb-8 text-cream-dim">
         {brews.length > 0
           ? `${brews.length} brew${brews.length === 1 ? "" : "s"} logged`

@@ -56,7 +56,7 @@ export default function ProfilePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="mb-1 text-3xl font-bold uppercase tracking-tight">Profile &amp; Equipment</h1>
+      <h1 className="font-display mb-1 text-3xl tracking-tight">Profile &amp; Equipment</h1>
       <p className="mb-8 text-cream-dim">
         Your gear feeds the recommendation engine — grind settings come back converted to your
         grinder.
