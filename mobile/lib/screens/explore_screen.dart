@@ -107,86 +107,110 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-        children: [
-          const PosterHeader(
-            title: 'EXPLORE',
-            accent: 'BEANS',
-            banner: '200 COFFEES. ZERO BAD CUPS.',
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            child: brutShadow(
-                radius: 12,
-                shadow: 4,
-                child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              style: const TextStyle(
-                  color: Palette.ink, fontWeight: FontWeight.w500),
-              decoration: InputDecoration(
-                hintText: 'Search beans, roasters, origins…',
-                prefixIcon: const Icon(Icons.search, color: Palette.inkSoft),
-                suffixIcon: _searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.close,
-                            size: 18, color: Palette.inkSoft),
-                        tooltip: 'Clear search',
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                          _fetch();
-                        },
-                      ),
-              ),
-            )),
-          ),
-          SizedBox(
-            height: 50,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _filterChip<String>(
-                  label: 'Origin',
-                  value: _origin,
-                  options: [for (final o in origins) (o, o)],
-                  onChanged: (v) => setState(() {
-                    _origin = v;
-                    _fetch();
-                  }),
-                ),
-                const SizedBox(width: 8),
-                _filterChip<String>(
-                  label: 'Process',
-                  value: _process,
-                  options: [for (final p in processes) (p, processLabel(p))],
-                  onChanged: (v) => setState(() {
-                    _process = v;
-                    _fetch();
-                  }),
-                ),
-                const SizedBox(width: 8),
-                _filterChip<String>(
-                  label: 'Roast',
-                  value: _roastLevel,
-                  options: [for (final r in roastLevels) (r.key, r.label)],
-                  onChanged: (v) => setState(() {
-                    _roastLevel = v;
-                    _fetch();
-                  }),
-                ),
-              ],
+      body: SafeArea(bottom: false, child: _screen()),
+    );
+  }
+
+  /// Header, search and filters scroll away with the list — no static band
+  /// for content to clip against.
+  List<Widget> _headerItems() {
+    return [
+      const PosterHeader(
+        title: 'EXPLORE',
+        accent: 'BEANS',
+        banner: '200 COFFEES. ZERO BAD CUPS.',
+        padding: EdgeInsets.fromLTRB(0, 14, 0, 12),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: brutShadow(
+          radius: 12,
+          shadow: 4,
+          child: TextField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            style: const TextStyle(
+              color: Palette.ink,
+              fontWeight: FontWeight.w500,
             ),
+            decoration: InputDecoration(
+              hintText: 'Search beans, roasters, origins…',
+              prefixIcon: const Icon(Icons.search, color: Palette.inkSoft),
+              suffixIcon: _searchController.text.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: Palette.inkSoft,
+                      ),
+                      tooltip: 'Clear search',
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {});
+                        _fetch();
+                      },
+                    ),
+            ),
+          ),
+        ),
+      ),
+      SizedBox(
+        height: 50,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.zero,
+          children: [
+            _filterChip<String>(
+              label: 'Origin',
+              value: _origin,
+              options: [for (final o in origins) (o, o)],
+              onChanged: (v) => setState(() {
+                _origin = v;
+                _fetch();
+              }),
+            ),
+            const SizedBox(width: 8),
+            _filterChip<String>(
+              label: 'Process',
+              value: _process,
+              options: [for (final p in processes) (p, processLabel(p))],
+              onChanged: (v) => setState(() {
+                _process = v;
+                _fetch();
+              }),
+            ),
+            const SizedBox(width: 8),
+            _filterChip<String>(
+              label: 'Roast',
+              value: _roastLevel,
+              options: [for (final r in roastLevels) (r.key, r.label)],
+              onChanged: (v) => setState(() {
+                _roastLevel = v;
+                _fetch();
+              }),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  /// Non-scrolling states keep the header in a static column (nothing can
+  /// clip there); the loaded list embeds it as its first item.
+  Widget _screen() {
+    if (_loading || _error != null || _beans.isEmpty) {
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(children: _headerItems()),
           ),
           Expanded(child: _body()),
         ],
-        ),
-      ),
-    );
+      );
+    }
+    return _body();
   }
 
   Widget _filterChip<T>({
@@ -218,13 +242,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(selectedLabel.toUpperCase(),
-                style: const TextStyle(
-                  color: Palette.ink,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                )),
+            Text(
+              selectedLabel.toUpperCase(),
+              style: const TextStyle(
+                color: Palette.ink,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
             const Icon(Icons.arrow_drop_down, size: 18, color: Palette.ink),
           ],
         ),
@@ -244,8 +270,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
     if (_beans.isEmpty) {
       return const Center(
-        child: Text('No beans match those filters.',
-            style: TextStyle(color: Palette.creamDim)),
+        child: Text(
+          'No beans match those filters.',
+          style: TextStyle(color: Palette.creamDim),
+        ),
       );
     }
     final hasMore = _beans.length < _total;
@@ -253,11 +281,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
       color: Palette.blush,
       onRefresh: () => _fetch(silent: true),
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
-        itemCount: _beans.length + 1 + (hasMore ? 1 : 0),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
+        itemCount: _beans.length + 2 + (hasMore ? 1 : 0),
         separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, i) {
           if (i == 0) {
+            return Column(children: _headerItems());
+          }
+          if (i == 1) {
             return Text(
               'SHOWING ${_beans.length} OF $_total',
               style: const TextStyle(
@@ -268,17 +299,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             );
           }
-          if (i == _beans.length + 1) {
+          if (i == _beans.length + 2) {
             return Center(
               child: OutlinedButton(
                 onPressed: _loadingMore ? null : _loadMore,
-                child: Text(_loadingMore
-                    ? 'Loading…'
-                    : 'Load more (${_total - _beans.length} left)'),
+                child: Text(
+                  _loadingMore
+                      ? 'Loading…'
+                      : 'Load more (${_total - _beans.length} left)',
+                ),
               ),
             );
           }
-          final bean = _beans[i - 1];
+          final bean = _beans[i - 2];
           return BeanCard(
             key: ValueKey(bean.id),
             bean: bean,

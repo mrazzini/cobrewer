@@ -61,27 +61,40 @@ class _JournalScreenState extends State<JournalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            PosterHeader(
-              title: 'BREW',
-              accent: 'JOURNAL',
-              banner: _brews.isEmpty
-                  ? 'EVERY CUP MAKES IT SMARTER'
-                  : '${_brews.length} BREW${_brews.length == 1 ? '' : 'S'} · GETTING SMARTER',
-              trailing: IconButton(
-                onPressed: () => _fetch(),
-                icon: const Icon(Icons.refresh, color: Palette.cream),
-                tooltip: 'Refresh',
-              ),
-            ),
-            Expanded(child: _body()),
-          ],
-        ),
+      body: SafeArea(bottom: false, child: _screen()),
+    );
+  }
+
+  Widget _header({bool inList = false}) {
+    return PosterHeader(
+      title: 'BREW',
+      accent: 'JOURNAL',
+      banner: _brews.isEmpty
+          ? 'EVERY CUP MAKES IT SMARTER'
+          : '${_brews.length} BREW${_brews.length == 1 ? '' : 'S'} · GETTING SMARTER',
+      padding: inList
+          ? const EdgeInsets.fromLTRB(0, 14, 0, 6)
+          : const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      trailing: IconButton(
+        onPressed: () => _fetch(),
+        icon: const Icon(Icons.refresh, color: Palette.cream),
+        tooltip: 'Refresh',
       ),
     );
+  }
+
+  /// The header scrolls away with the entries; static only when there is
+  /// nothing scrollable behind it.
+  Widget _screen() {
+    if (_loading || _error != null || _brews.isEmpty) {
+      return Column(
+        children: [
+          _header(),
+          Expanded(child: _body()),
+        ],
+      );
+    }
+    return _body();
   }
 
   Widget _body() {
@@ -105,21 +118,25 @@ class _JournalScreenState extends State<JournalScreen> {
     }
     if (_brews.isEmpty) {
       return const Center(
-        child: Text('No brews yet — dial one in!',
-            style: TextStyle(color: Palette.creamDim)),
+        child: Text(
+          'No brews yet — dial one in!',
+          style: TextStyle(color: Palette.creamDim),
+        ),
       );
     }
     return RefreshIndicator(
       color: Palette.blush,
       onRefresh: () => _fetch(silent: true),
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
-        itemCount: _brews.length,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
+        itemCount: _brews.length + 1,
         separatorBuilder: (_, _) => const SizedBox(height: 10),
-        itemBuilder: (context, i) => KeyedSubtree(
-          key: ValueKey(_brews[i].id),
-          child: _brewCard(_brews[i]),
-        ),
+        itemBuilder: (context, i) => i == 0
+            ? _header(inList: true)
+            : KeyedSubtree(
+                key: ValueKey(_brews[i - 1].id),
+                child: _brewCard(_brews[i - 1]),
+              ),
       ),
     );
   }
@@ -139,58 +156,62 @@ class _JournalScreenState extends State<JournalScreen> {
     ];
     return BrutCard(
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    (bean?.name ?? 'Unknown bean').toUpperCase(),
-                    style: const TextStyle(
-                        fontFamily: 'Anton',
-                        fontSize: 15,
-                        letterSpacing: 0.5,
-                        color: Palette.ink),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (brew.rating != null)
-                  RatingStars(rating: brew.rating!, size: 16),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${brewerLabel(brew.brewer)} · $date'
-              '${brew.generatedBy == 'rules' ? ' · from recipe' : ''}',
-              style: const TextStyle(
-                  color: Palette.inkSoft,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
-            ),
-            if (params.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                params.join(' · '),
-                style: const TextStyle(
-                    color: Palette.inkSoft,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500),
-              ),
-            ],
-            if (brew.notes?.isNotEmpty ?? false) ...[
-              const SizedBox(height: 6),
-              Text(
-                brew.notes!,
-                style: const TextStyle(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  (bean?.name ?? 'Unknown bean').toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'Anton',
+                    fontSize: 15,
+                    letterSpacing: 0.5,
                     color: Palette.ink,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    fontStyle: FontStyle.italic),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              if (brew.rating != null)
+                RatingStars(rating: brew.rating!, size: 16),
             ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${brewerLabel(brew.brewer)} · $date'
+            '${brew.generatedBy == 'rules' ? ' · from recipe' : ''}',
+            style: const TextStyle(
+              color: Palette.inkSoft,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (params.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              params.join(' · '),
+              style: const TextStyle(
+                color: Palette.inkSoft,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
-        ),
+          if (brew.notes?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 6),
+            Text(
+              brew.notes!,
+              style: const TextStyle(
+                color: Palette.ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

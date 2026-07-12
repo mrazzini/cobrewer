@@ -65,7 +65,10 @@ class BrutCard extends StatelessWidget {
               child: Padding(padding: padding, child: child),
             ),
     );
-    return Container(decoration: brutBox(color: color, radius: radius, shadow: shadow), child: inner);
+    return Container(
+      decoration: brutBox(color: color, radius: radius, shadow: shadow),
+      child: inner,
+    );
   }
 }
 
@@ -93,11 +96,17 @@ class _StripesPainter extends CustomPainter {
 }
 
 /// Zero-blur drop shadow around an input/select that draws its own border.
-Widget brutShadow({required Widget child, double radius = 12, double shadow = 3}) {
+Widget brutShadow({
+  required Widget child,
+  double radius = 12,
+  double shadow = 3,
+}) {
   return Container(
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(radius),
-      boxShadow: [BoxShadow(color: Palette.ink, offset: Offset(shadow, shadow))],
+      boxShadow: [
+        BoxShadow(color: Palette.ink, offset: Offset(shadow, shadow)),
+      ],
     ),
     child: child,
   );
@@ -158,6 +167,7 @@ class PosterHeader extends StatelessWidget {
   final String accent;
   final String? banner;
   final Widget? trailing;
+  final EdgeInsetsGeometry padding;
 
   const PosterHeader({
     super.key,
@@ -165,12 +175,13 @@ class PosterHeader extends StatelessWidget {
     required this.accent,
     this.banner,
     this.trailing,
+    this.padding = const EdgeInsets.fromLTRB(16, 14, 16, 12),
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      padding: padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -185,7 +196,9 @@ class PosterHeader extends StatelessWidget {
                       height: 1,
                       letterSpacing: 0.5,
                       color: Palette.cream,
-                      shadows: [Shadow(color: Palette.ink, offset: Offset(3, 3))],
+                      shadows: [
+                        Shadow(color: Palette.ink, offset: Offset(3, 3)),
+                      ],
                     ),
                     children: [
                       TextSpan(text: '$title '),
@@ -281,8 +294,14 @@ ThemeData buildCobrewerTheme() {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Palette.blushDeep, width: 3),
       ),
-      hintStyle: const TextStyle(color: Palette.inkSoft, fontWeight: FontWeight.w500),
-      labelStyle: const TextStyle(color: Palette.inkSoft, fontWeight: FontWeight.w600),
+      hintStyle: const TextStyle(
+        color: Palette.inkSoft,
+        fontWeight: FontWeight.w500,
+      ),
+      labelStyle: const TextStyle(
+        color: Palette.inkSoft,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(

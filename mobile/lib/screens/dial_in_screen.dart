@@ -111,8 +111,10 @@ class _DialInScreenState extends State<DialInScreen> {
 
   void _onBeanSearchChanged(String query) {
     _debounce?.cancel();
-    _debounce =
-        Timer(const Duration(milliseconds: 300), () => _searchBeans(query));
+    _debounce = Timer(
+      const Duration(milliseconds: 300),
+      () => _searchBeans(query),
+    );
   }
 
   Future<void> _getRecipe() async {
@@ -146,8 +148,8 @@ class _DialInScreenState extends State<DialInScreen> {
     _doseController.text = p.doseG.toString();
     _yieldController.text = p.yieldG.toString();
     _tempController.text = p.waterTempC.toString();
-    _timeController.text =
-        ((p.brewTimeMinSeconds + p.brewTimeMaxSeconds) ~/ 2).toString();
+    _timeController.text = ((p.brewTimeMinSeconds + p.brewTimeMaxSeconds) ~/ 2)
+        .toString();
     _recBrewer = _brewer;
     _recGrinder = _grinder;
     _prefill = {
@@ -175,7 +177,10 @@ class _DialInScreenState extends State<DialInScreen> {
   /// Adds a message to [problems] when the text isn't a number or is
   /// outside the given bounds; empty text is simply null.
   double? _parseField(
-      TextEditingController controller, String boundsKey, List<String> problems) {
+    TextEditingController controller,
+    String boundsKey,
+    List<String> problems,
+  ) {
     final raw = controller.text.trim();
     if (raw.isEmpty) return null;
     final bounds = brewBounds[boundsKey]!;
@@ -186,7 +191,8 @@ class _DialInScreenState extends State<DialInScreen> {
     }
     if (n < bounds.min || n > bounds.max) {
       problems.add(
-          '${bounds.label} must be between ${bounds.min}${bounds.unit} and ${bounds.max}${bounds.unit}');
+        '${bounds.label} must be between ${bounds.min}${bounds.unit} and ${bounds.max}${bounds.unit}',
+      );
       return null;
     }
     return n;
@@ -204,9 +210,9 @@ class _DialInScreenState extends State<DialInScreen> {
     final time = _parseField(_timeController, 'brew_time_seconds', problems);
     final tds = _parseField(_tdsController, 'tds', problems);
     if (problems.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(problems.join('. '))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(problems.join('. '))));
       return;
     }
 
@@ -247,57 +253,64 @@ class _DialInScreenState extends State<DialInScreen> {
       backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            const PosterHeader(
-              title: 'DIAL',
-              accent: 'IT IN',
-              banner: 'RECIPE TUNED TO YOUR GEAR',
-            ),
-            Expanded(child: _bean == null ? _beanPicker() : _dialInFlow()),
-          ],
+        child: _bean == null ? _beanPicker() : _dialInFlow(),
+      ),
+    );
+  }
+
+  static const _header = PosterHeader(
+    title: 'DIAL',
+    accent: 'IT IN',
+    banner: 'RECIPE TUNED TO YOUR GEAR',
+    padding: EdgeInsets.fromLTRB(0, 14, 0, 12),
+  );
+
+  Widget _pickerSearchField() {
+    return brutShadow(
+      radius: 12,
+      shadow: 4,
+      child: TextField(
+        controller: _beanSearchController,
+        onChanged: _onBeanSearchChanged,
+        style: const TextStyle(color: Palette.ink, fontWeight: FontWeight.w500),
+        decoration: const InputDecoration(
+          hintText: 'Pick a bean to dial in…',
+          prefixIcon: Icon(Icons.search, color: Palette.inkSoft),
         ),
       ),
     );
   }
 
   Widget _beanPicker() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: brutShadow(
-            radius: 12,
-            shadow: 4,
-            child: TextField(
-              controller: _beanSearchController,
-              onChanged: _onBeanSearchChanged,
-              style: const TextStyle(
-                  color: Palette.ink, fontWeight: FontWeight.w500),
-              decoration: const InputDecoration(
-                hintText: 'Pick a bean to dial in…',
-                prefixIcon: Icon(Icons.search, color: Palette.inkSoft),
-              ),
-            ),
+    if (_searchingBeans || _beanSearchError != null || _beanResults.isEmpty) {
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(children: [_header, _pickerSearchField()]),
           ),
-        ),
-        Expanded(child: _beanPickerResults()),
-      ],
-    );
+          Expanded(child: _beanPickerResults()),
+        ],
+      );
+    }
+    return _beanPickerResults();
   }
 
   Widget _beanPickerResults() {
     if (_searchingBeans) {
       return const Center(
-          child: CircularProgressIndicator(color: Palette.blush));
+        child: CircularProgressIndicator(color: Palette.blush),
+      );
     }
     if (_beanSearchError != null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_beanSearchError!,
-                style: const TextStyle(color: Palette.creamDim)),
+            Text(
+              _beanSearchError!,
+              style: const TextStyle(color: Palette.creamDim),
+            ),
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () => _searchBeans(_beanSearchController.text),
@@ -320,11 +333,14 @@ class _DialInScreenState extends State<DialInScreen> {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
-      itemCount: _beanResults.length,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
+      itemCount: _beanResults.length + 1,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
-        final bean = _beanResults[i];
+        if (i == 0) {
+          return Column(children: [_header, _pickerSearchField()]);
+        }
+        final bean = _beanResults[i - 1];
         return BeanCard(
           key: ValueKey(bean.id),
           bean: bean,
@@ -338,8 +354,9 @@ class _DialInScreenState extends State<DialInScreen> {
   Widget _dialInFlow() {
     final bean = _bean!;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
       children: [
+        _header,
         _sectionTitle('1 · Bean'),
         BeanCard(bean: bean, compact: true),
         Align(
@@ -350,57 +367,66 @@ class _DialInScreenState extends State<DialInScreen> {
               _rec = null;
               _searchBeans(_beanSearchController.text);
             }),
-            child: const Text('Change bean',
-                style: TextStyle(
-                    color: Palette.cream,
-                    fontWeight: FontWeight.w700,
-                    decoration: TextDecoration.underline)),
+            child: const Text(
+              'Change bean',
+              style: TextStyle(
+                color: Palette.cream,
+                fontWeight: FontWeight.w700,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
         ),
         _sectionTitle('2 · Equipment'),
         brutShadow(
-            radius: 12,
-            child: DropdownButtonFormField<String>(
-          value: _brewer,
-          decoration: const InputDecoration(labelText: 'Brewer'),
-          style: const TextStyle(
+          radius: 12,
+          child: DropdownButtonFormField<String>(
+            value: _brewer,
+            decoration: const InputDecoration(labelText: 'Brewer'),
+            style: const TextStyle(
               color: Palette.ink,
               fontFamily: 'Rubik',
               fontWeight: FontWeight.w600,
-              fontSize: 15),
-          dropdownColor: Palette.cream,
-          items: [
-            for (final b in brewers)
-              DropdownMenuItem(value: b.key, child: Text(b.label)),
-          ],
-          onChanged: (v) => setState(() {
-            _brewer = v ?? _brewer;
-            _equipmentTouched = true;
-          }),
-        )),
+              fontSize: 15,
+            ),
+            dropdownColor: Palette.cream,
+            items: [
+              for (final b in brewers)
+                DropdownMenuItem(value: b.key, child: Text(b.label)),
+            ],
+            onChanged: (v) => setState(() {
+              _brewer = v ?? _brewer;
+              _equipmentTouched = true;
+            }),
+          ),
+        ),
         const SizedBox(height: 10),
         brutShadow(
-            radius: 12,
-            child: DropdownButtonFormField<String?>(
-          value: _grinder,
-          decoration: const InputDecoration(labelText: 'Grinder (optional)'),
-          style: const TextStyle(
+          radius: 12,
+          child: DropdownButtonFormField<String?>(
+            value: _grinder,
+            decoration: const InputDecoration(labelText: 'Grinder (optional)'),
+            style: const TextStyle(
               color: Palette.ink,
               fontFamily: 'Rubik',
               fontWeight: FontWeight.w600,
-              fontSize: 15),
-          dropdownColor: Palette.cream,
-          items: [
-            const DropdownMenuItem<String?>(
-                value: null, child: Text('No grinder / other')),
-            for (final g in grinders)
-              DropdownMenuItem<String?>(value: g.key, child: Text(g.label)),
-          ],
-          onChanged: (v) => setState(() {
-            _grinder = v;
-            _equipmentTouched = true;
-          }),
-        )),
+              fontSize: 15,
+            ),
+            dropdownColor: Palette.cream,
+            items: [
+              const DropdownMenuItem<String?>(
+                value: null,
+                child: Text('No grinder / other'),
+              ),
+              for (final g in grinders)
+                DropdownMenuItem<String?>(value: g.key, child: Text(g.label)),
+            ],
+            onChanged: (v) => setState(() {
+              _grinder = v;
+              _equipmentTouched = true;
+            }),
+          ),
+        ),
         const SizedBox(height: 14),
         BrutButton(
           expand: true,
@@ -410,8 +436,10 @@ class _DialInScreenState extends State<DialInScreen> {
         if (_recError != null)
           Padding(
             padding: const EdgeInsets.only(top: 10),
-            child: Text(_recError!,
-                style: const TextStyle(color: Palette.blushDeep)),
+            child: Text(
+              _recError!,
+              style: const TextStyle(color: Palette.blushDeep),
+            ),
           ),
         if (_rec?.parameters != null) ...[
           _sectionTitle('3 · Recipe'),
@@ -427,25 +455,31 @@ class _DialInScreenState extends State<DialInScreen> {
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 10),
-      child: Builder(builder: (context) {
-        final parts = text.toUpperCase().split(' · ');
-        const style = TextStyle(
-          fontFamily: 'Anton',
-          color: Palette.cream,
-          fontSize: 17,
-          letterSpacing: 1,
-          shadows: [Shadow(color: Palette.ink, offset: Offset(2, 2))],
-        );
-        if (parts.length < 2) return Text(text.toUpperCase(), style: style);
-        return Text.rich(
-          TextSpan(style: style, children: [
+      child: Builder(
+        builder: (context) {
+          final parts = text.toUpperCase().split(' · ');
+          const style = TextStyle(
+            fontFamily: 'Anton',
+            color: Palette.cream,
+            fontSize: 17,
+            letterSpacing: 1,
+            shadows: [Shadow(color: Palette.ink, offset: Offset(2, 2))],
+          );
+          if (parts.length < 2) return Text(text.toUpperCase(), style: style);
+          return Text.rich(
             TextSpan(
-                text: '${parts[0]} · ',
-                style: const TextStyle(color: Palette.blush)),
-            TextSpan(text: parts.sublist(1).join(' · ')),
-          ]),
-        );
-      }),
+              style: style,
+              children: [
+                TextSpan(
+                  text: '${parts[0]} · ',
+                  style: const TextStyle(color: Palette.blush),
+                ),
+                TextSpan(text: parts.sublist(1).join(' · ')),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -464,76 +498,89 @@ class _DialInScreenState extends State<DialInScreen> {
     return BrutCard(
       color: Palette.blush,
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (final (label, value) in stats)
-                  Container(
-                    width: 100,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Palette.ink, width: 2.5),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(label.toUpperCase(),
-                            style: const TextStyle(
-                                color: Palette.inkSoft,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8)),
-                        const SizedBox(height: 2),
-                        Text(value,
-                            style: const TextStyle(
-                                fontFamily: 'Anton',
-                                color: Palette.ink,
-                                fontSize: 16)),
-                      ],
-                    ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final (label, value) in stats)
+                Container(
+                  width: 100,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 7,
                   ),
-              ],
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Palette.ink, width: 2.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        label.toUpperCase(),
+                        style: const TextStyle(
+                          color: Palette.inkSoft,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        value,
+                        style: const TextStyle(
+                          fontFamily: 'Anton',
+                          color: Palette.ink,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          if (p.grindSetting.converted)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                'Converted from ${p.grindSettingC40Clicks} C40 clicks for ${grinderLabel(p.grindSetting.grinder)}.',
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            if (p.grindSetting.converted)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  'Converted from ${p.grindSettingC40Clicks} C40 clicks for ${grinderLabel(p.grindSetting.grinder)}.',
-                  style: const TextStyle(
-                      color: Palette.ink,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600),
+          for (final note in p.notes)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                note,
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            for (final note in p.notes)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(note,
-                    style: const TextStyle(
-                        color: Palette.ink,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500)),
-              ),
-            if (rec.confidenceScore != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  'Confidence ${(rec.confidenceScore! * 100).round()}%',
-                  style: const TextStyle(
-                      color: Palette.ink,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6),
+            ),
+          if (rec.confidenceScore != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                'Confidence ${(rec.confidenceScore! * 100).round()}%',
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -541,62 +588,71 @@ class _DialInScreenState extends State<DialInScreen> {
     return BrutCard(
       padding: const EdgeInsets.all(14),
       child: Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _numField(_grindController, 'Grind setting')),
-            const SizedBox(width: 10),
-            Expanded(child: _numField(_doseController, 'Dose (g)')),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _numField(_yieldController, 'Yield (g)')),
-            const SizedBox(width: 10),
-            Expanded(child: _numField(_tempController, 'Water (°C)')),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _numField(_timeController, 'Brew time (seconds)')),
-            const SizedBox(width: 10),
-            Expanded(child: _numField(_tdsController, 'TDS % (optional)')),
-          ],
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _notesController,
-          maxLines: 2,
-          style: const TextStyle(
-              color: Palette.ink, fontWeight: FontWeight.w500),
-          decoration: const InputDecoration(
-              labelText: 'Notes', fillColor: Colors.white),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            const Text('RATING',
-                style: TextStyle(
-                    color: Palette.ink,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    fontSize: 12)),
-            const SizedBox(width: 10),
-            RatingStars(
-              rating: _rating,
-              onChanged: (v) => setState(() => _rating = v),
+        children: [
+          Row(
+            children: [
+              Expanded(child: _numField(_grindController, 'Grind setting')),
+              const SizedBox(width: 10),
+              Expanded(child: _numField(_doseController, 'Dose (g)')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _numField(_yieldController, 'Yield (g)')),
+              const SizedBox(width: 10),
+              Expanded(child: _numField(_tempController, 'Water (°C)')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _numField(_timeController, 'Brew time (seconds)'),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: _numField(_tdsController, 'TDS % (optional)')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _notesController,
+            maxLines: 2,
+            style: const TextStyle(
+              color: Palette.ink,
+              fontWeight: FontWeight.w500,
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        BrutButton(
-          expand: true,
-          label: _logging ? 'LOGGING…' : 'LOG BREW',
-          onPressed: _logging ? null : _logBrew,
-        ),
-      ],
+            decoration: const InputDecoration(
+              labelText: 'Notes',
+              fillColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Text(
+                'RATING',
+                style: TextStyle(
+                  color: Palette.ink,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 10),
+              RatingStars(
+                rating: _rating,
+                onChanged: (v) => setState(() => _rating = v),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          BrutButton(
+            expand: true,
+            label: _logging ? 'LOGGING…' : 'LOG BREW',
+            onPressed: _logging ? null : _logBrew,
+          ),
+        ],
       ),
     );
   }
