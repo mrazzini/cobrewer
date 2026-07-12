@@ -28,8 +28,7 @@ const ORIGINS = [
   "Ecuador",
 ];
 
-const selectClass =
-  "rounded-md border border-transparent bg-peri-well px-3 py-2 text-sm text-cream placeholder:text-cream-dim/70 focus:border-cream/60 focus:outline-none";
+const selectClass = "brut-input";
 
 export default function ExplorePage() {
   const [beans, setBeans] = useState<Bean[]>([]);
@@ -98,15 +97,12 @@ export default function ExplorePage() {
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-10">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl tracking-tight">Explore Beans</h1>
-        <Link
-          href="/add-bean"
-          className="rounded-md bg-blush px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-blush-deep"
-        >
-          + Add a bean
+        <h1 className="poster poster-shadow text-4xl">Explore Beans</h1>
+        <Link href="/add-bean" className="brut-btn px-4 py-2 text-xs">
+          Add a bean
         </Link>
       </div>
-      <p className="mb-6 text-cream-dim">
+      <p className="mb-6 font-medium text-cream-dim">
         {total > 0
           ? filtersActive
             ? `${total} bean${total === 1 ? "" : "s"} match`
@@ -163,17 +159,14 @@ export default function ExplorePage() {
           ))}
         </select>
         {filtersActive && (
-          <button
-            onClick={clearFilters}
-            className="rounded-md border border-cream/40 px-3 py-2 text-sm text-cream transition-colors hover:border-cream hover:bg-cream/10"
-          >
+          <button onClick={clearFilters} className="brut-btn brut-btn-ghost px-3 py-2 text-xs">
             Clear all
           </button>
         )}
       </div>
 
       {error && (
-        <p className="rounded-md bg-blush/20 p-4 text-cream">
+        <p className="rounded-2xl border-[3px] border-ink bg-blush p-4 font-semibold text-ink shadow-[4px_4px_0_var(--color-ink)]">
           {error}
         </p>
       )}
@@ -195,15 +188,11 @@ export default function ExplorePage() {
 
       {!loading && !error && beans.length > 0 && (
         <div className="mt-8 flex flex-col items-center gap-3 pb-4">
-          <p className="text-sm text-cream-dim/80">
+          <p className="brut-label text-cream-dim">
             Showing {beans.length} of {total}
           </p>
           {beans.length < total && (
-            <button
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="rounded-md bg-blush px-5 py-2 text-sm font-semibold text-ink transition-colors hover:bg-blush-deep disabled:opacity-40"
-            >
+            <button onClick={loadMore} disabled={loadingMore} className="brut-btn px-6 py-2.5">
               {loadingMore ? "Loading…" : "Load more"}
             </button>
           )}

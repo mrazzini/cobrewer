@@ -16,14 +16,13 @@ import {
 } from "@/lib/constants";
 import type { Bean, BrewLog, Equipment, Recommendation, UserProfile } from "@/lib/types";
 
-const inputClass =
-  "rounded-md border border-transparent bg-peri-well px-3 py-2 text-sm text-cream placeholder:text-cream-dim/70 focus:border-cream/60 focus:outline-none";
+const inputClass = "brut-input";
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-cream/25 p-3">
-      <p className="text-xs uppercase tracking-wide text-ink/70">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${accent ? "text-cream" : "text-ink"}`}>{value}</p>
+    <div className="rounded-xl border-[2.5px] border-ink bg-white p-3 text-center">
+      <p className="brut-label text-[10px] text-ink-soft">{label}</p>
+      <p className="poster mt-1 text-lg text-ink">{value}</p>
     </div>
   );
 }
@@ -221,21 +220,19 @@ function DialInContent() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="font-display mb-1 text-3xl tracking-tight">Dial In</h1>
-      <p className="mb-8 text-cream-dim">
+      <h1 className="poster poster-shadow mb-1 text-4xl">Dial In</h1>
+      <p className="mb-8 font-medium text-cream-dim">
         Pick a bean and your gear — get parameters, brew, then log how it went.
       </p>
 
       {/* Step 1: bean */}
-      <section className="mb-6 rounded-xl bg-peri-deep/70 p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
-          1 · Bean
-        </h2>
+      <section className="brut-card mb-6 p-5">
+        <h2 className="poster mb-3 text-[15px] tracking-wide">1 · Bean</h2>
         {bean ? (
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="font-semibold">{bean.name}</p>
-              <p className="text-sm text-cream-dim">
+              <p className="poster text-lg">{bean.name}</p>
+              <p className="text-sm font-semibold text-ink-soft">
                 {[bean.roaster, bean.origin, roastLabel(bean.roast_level)]
                   .filter(Boolean)
                   .join(" · ")}
@@ -247,7 +244,7 @@ function DialInContent() {
                 setBean(null);
                 setRec(null);
               }}
-              className="text-sm text-cream-dim/80 hover:text-cream"
+              className="brut-label text-ink-soft underline-offset-2 hover:underline"
             >
               change
             </button>
@@ -255,7 +252,7 @@ function DialInContent() {
         ) : (
           <div className="relative">
             {beanError && (
-              <p className="mb-3 rounded-md bg-blush/20 p-3 text-sm text-cream">{beanError}</p>
+              <p className="mb-3 rounded-xl border-[2.5px] border-ink bg-blush p-3 text-sm font-semibold text-ink">{beanError}</p>
             )}
             <input
               type="search"
@@ -266,11 +263,11 @@ function DialInContent() {
               className={`${inputClass} w-full`}
             />
             {beanResults.length > 0 && (
-              <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md bg-peri-well shadow-xl">
+              <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border-[3px] border-ink bg-white text-ink shadow-[4px_4px_0_var(--color-ink)]">
                 {beanResults.map((b) => (
                   <li key={b.id}>
                     <button
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-blush/25"
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-blush/40"
                       onClick={() => {
                         setBean(b);
                         setBeanSearch("");
@@ -279,24 +276,24 @@ function DialInContent() {
                       }}
                     >
                       <span className="font-medium">{b.name}</span>
-                      <span className="text-cream-dim/80"> — {b.roaster ?? b.origin ?? ""}</span>
+                      <span className="text-ink-soft"> — {b.roaster ?? b.origin ?? ""}</span>
                     </button>
                   </li>
                 ))}
               </ul>
             )}
             {beanSearch && beanResults.length === 0 && (
-              <p className="mt-2 text-sm text-cream-dim/80">
+              <p className="mt-2 text-sm font-medium text-ink-soft">
                 Nothing matches “{beanSearch}” —{" "}
-                <Link href="/add-bean" className="font-semibold text-blush hover:underline">
+                <Link href="/add-bean" className="font-bold text-blush-deep hover:underline">
                   add it to the library
                 </Link>
                 .
               </p>
             )}
-            <p className="mt-2 text-sm text-cream-dim/80">
+            <p className="mt-2 text-sm font-medium text-ink-soft">
               or{" "}
-              <Link href="/explore" className="font-semibold text-blush hover:underline">
+              <Link href="/explore" className="font-bold text-blush-deep hover:underline">
                 browse the library
               </Link>
             </p>
@@ -305,10 +302,8 @@ function DialInContent() {
       </section>
 
       {/* Step 2: equipment */}
-      <section className="mb-6 rounded-xl bg-peri-deep/70 p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
-          2 · Equipment
-        </h2>
+      <section className="brut-card mb-6 p-5">
+        <h2 className="poster mb-3 text-[15px] tracking-wide">2 · Equipment</h2>
         <div className="flex flex-wrap gap-3">
           <select
             value={brewer}
@@ -326,7 +321,7 @@ function DialInContent() {
             value={grinder}
             onChange={(e) => setGrinder(e.target.value)}
             aria-label="Grinder"
-            className={inputClass}
+            className={`${inputClass} max-w-full`}
           >
             <option value="">Grinder (optional — defaults to C40 clicks)</option>
             {GRINDERS.map((g) => (
@@ -338,7 +333,7 @@ function DialInContent() {
           <button
             onClick={getRecommendation}
             disabled={!bean || recLoading}
-            className="rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:cursor-not-allowed disabled:opacity-40"
+            className="brut-btn px-5 py-2"
           >
             {recLoading ? "Computing…" : "Get recommendation"}
           </button>
@@ -346,21 +341,19 @@ function DialInContent() {
       </section>
 
       {error && (
-        <p className="mb-6 rounded-md bg-blush/20 p-4 text-cream">
+        <p className="mb-6 rounded-2xl border-[3px] border-ink bg-blush p-4 font-semibold text-ink shadow-[4px_4px_0_var(--color-ink)]">
           {error}
         </p>
       )}
 
       {/* Step 3: recommendation */}
       {params && (
-        <section className="mb-6 rounded-xl bg-blush p-5 text-ink">
+        <section className="brut-card mb-6 bg-blush p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-ink">
-              3 · Your recipe
-            </h2>
+            <h2 className="poster text-[15px] tracking-wide">3 · Your recipe</h2>
             {rec?.confidence_score != null && (
-              <span className="text-xs text-ink/70">
-                confidence {(rec.confidence_score * 100).toFixed(0)}%
+              <span className="brut-chip bg-olive">
+                {(rec.confidence_score * 100).toFixed(0)}% confident
               </span>
             )}
           </div>
@@ -368,7 +361,6 @@ function DialInContent() {
             <Stat
               label={`Grind (${params.grind_setting.grinder ?? "C40"})`}
               value={`${params.grind_setting.value} ${params.grind_setting.unit}`}
-              accent
             />
             <Stat label="Dose" value={`${params.dose_g} g`} />
             <Stat label="Ratio" value={params.ratio} />
@@ -378,9 +370,9 @@ function DialInContent() {
             {params.pressure_bar && <Stat label="Pressure" value={`${params.pressure_bar} bar`} />}
           </div>
           {params.notes.length > 0 && (
-            <ul className="mt-3 space-y-1 text-sm text-ink/80">
+            <ul className="mt-3 space-y-1 rounded-xl border-[2.5px] border-dashed border-ink bg-white/60 p-3 text-sm font-medium text-ink">
               {params.notes.map((n) => (
-                <li key={n}>• {n}</li>
+                <li key={n}>{n}</li>
               ))}
             </ul>
           )}
@@ -389,8 +381,8 @@ function DialInContent() {
 
       {/* Step 4: log the brew */}
       {bean && (
-        <section className="rounded-xl bg-peri-deep/70 p-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
+        <section className="brut-card p-5">
+          <h2 className="poster mb-3 text-[15px] tracking-wide">
             {params ? "4" : "3"} · Log the brew
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -404,7 +396,7 @@ function DialInContent() {
                 ["TDS (%)", tds, setTds, "tds"],
               ] as const
             ).map(([label, value, setter, boundsKey]) => (
-              <label key={label} className="flex flex-col gap-1 text-xs text-cream-dim/80">
+              <label key={label} className="brut-label flex flex-col gap-1 text-ink-soft">
                 {label}
                 <input
                   type="number"
@@ -419,7 +411,7 @@ function DialInContent() {
             ))}
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <span className="text-xs text-cream-dim/80">Rating</span>
+            <span className="brut-label text-ink-soft">Rating</span>
             <RatingStars
               value={rating}
               onChange={(r) => {
@@ -440,14 +432,14 @@ function DialInContent() {
             <button
               onClick={logBrew}
               disabled={logging || logged}
-              className="rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:opacity-40"
+              className="brut-btn px-6 py-2.5"
             >
-              {logging ? "Saving…" : logged ? "Logged ✓" : "Log brew"}
+              {logging ? "Saving…" : logged ? "Logged" : "Log brew"}
             </button>
             {logged && (
-              <span className="text-sm font-semibold text-blush">
-                Logged ✓ —{" "}
-                <Link href="/journal" className="underline">
+              <span className="text-sm font-bold text-ink">
+                In the books —{" "}
+                <Link href="/journal" className="text-blush-deep underline">
                   view journal
                 </Link>
               </span>

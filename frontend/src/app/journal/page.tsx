@@ -28,15 +28,15 @@ export default function JournalPage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="font-display mb-1 text-3xl tracking-tight">Brew Journal</h1>
-      <p className="mb-8 text-cream-dim">
+      <h1 className="poster poster-shadow mb-1 text-4xl">Brew Journal</h1>
+      <p className="mb-8 font-medium text-cream-dim">
         {brews.length > 0
           ? `${brews.length} brew${brews.length === 1 ? "" : "s"} logged`
           : "Every cup you log makes the next recommendation smarter."}
       </p>
 
       {error && (
-        <p className="rounded-md bg-blush/20 p-4 text-cream">
+        <p className="rounded-2xl border-[3px] border-ink bg-blush p-4 font-semibold text-ink shadow-[4px_4px_0_var(--color-ink)]">
           {error}
         </p>
       )}
@@ -59,14 +59,11 @@ export default function JournalPage() {
 
       <ul className="space-y-4">
         {brews.map((brew) => (
-          <li
-            key={brew.id}
-            className="rounded-xl bg-peri-deep/70 p-5"
-          >
+          <li key={brew.id} className="brut-card p-5">
             <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
               <div>
-                <p className="font-semibold">{brew.bean?.name ?? "Unknown bean"}</p>
-                <p className="text-sm text-cream-dim">
+                <p className="poster text-lg">{brew.bean?.name ?? "Unknown bean"}</p>
+                <p className="text-sm font-semibold text-ink-soft">
                   {[brew.bean?.roaster, brewerLabel(brew.brewer)].filter(Boolean).join(" · ")}
                 </p>
               </div>
@@ -74,9 +71,9 @@ export default function JournalPage() {
                 {brew.rating != null ? (
                   <RatingStars value={brew.rating} />
                 ) : (
-                  <span className="text-xs text-cream-dim/60">unrated</span>
+                  <span className="brut-label text-ink-soft/70">unrated</span>
                 )}
-                <p className="text-xs text-cream-dim/80">
+                <p className="text-xs font-semibold text-ink-soft">
                   {new Date(brew.timestamp).toLocaleDateString(undefined, {
                     day: "numeric",
                     month: "short",
@@ -85,7 +82,7 @@ export default function JournalPage() {
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-cream-dim">
+            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-medium text-ink-soft">
               {brew.grind_setting != null && (
                 <span>
                   grind {brew.grind_setting}
@@ -100,12 +97,12 @@ export default function JournalPage() {
               )}
               {brew.tds != null && <span>TDS {brew.tds}%</span>}
               {brew.generated_by && (
-                <span className="text-cream-dim/60">
+                <span className="brut-label text-ink-soft/70">
                   {brew.generated_by === "rules" ? "from recipe" : "logged manually"}
                 </span>
               )}
             </div>
-            {brew.notes && <p className="mt-2 text-sm italic text-cream">{brew.notes}</p>}
+            {brew.notes && <p className="mt-2 text-sm font-medium italic text-ink">{brew.notes}</p>}
           </li>
         ))}
       </ul>

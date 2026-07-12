@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 /*
- * Cobrewer palette — retro, flat, friendly.
- * Two colors carry everything: periwinkle canvas, blush pink accent.
+ * Cobrewer "System B" — rounded neubrutalism (design/DESIGN.md).
+ * Periwinkle canvas, cream cards, 3px ink borders, hard offset shadows.
  */
 @theme {
   --color-peri: #7185bf;
-  --color-peri-deep: #6377b1;
-  --color-peri-well: #57699f;
-  --color-blush: #ed99a4;
-  --color-blush-deep: #e8858f;
   --color-cream: #f7f4ed;
   --color-cream-dim: #d9def1;
-  --color-ink: #333a63;
+  --color-blush: #ed99a4;
+  --color-blush-deep: #e8858f;
+  --color-olive: #b5b77a;
+  --color-ink: #14162b;
+  --color-ink-soft: #4d5170;
 }
 
 @theme inline {
-  --font-sans: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-shrikhand), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-rubik), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-anton), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
@@ -29,6 +29,95 @@ body {
 ::selection {
   background: var(--color-blush);
   color: var(--color-ink);
+}
+
+/* ---- System B building blocks ---- */
+@layer components {
+  .brut-card {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    border: 3px solid var(--color-ink);
+    border-radius: 18px;
+    box-shadow: 6px 6px 0 var(--color-ink);
+  }
+
+  .poster {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+  }
+
+  .poster-shadow {
+    text-shadow: 4px 4px 0 var(--color-ink);
+  }
+
+  .brut-btn {
+    display: inline-block;
+    text-align: center;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.875rem;
+    color: var(--color-ink);
+    background: var(--color-blush);
+    border: 3px solid var(--color-ink);
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--color-ink);
+    padding: 0.6rem 1.25rem;
+    transition: background-color 150ms ease-out;
+  }
+
+  .brut-btn:hover:not(:disabled) {
+    background: var(--color-blush-deep);
+  }
+
+  .brut-btn:disabled {
+    opacity: 0.45;
+  }
+
+  .brut-btn-ghost {
+    background: var(--color-cream);
+  }
+
+  .brut-btn-ghost:hover:not(:disabled) {
+    background: #fff;
+  }
+
+  .brut-chip {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-ink);
+    background: #fff;
+    border: 2px solid var(--color-ink);
+    border-radius: 999px;
+    padding: 0.25rem 0.6rem;
+  }
+
+  .brut-input {
+    color: var(--color-ink);
+    background: var(--color-cream);
+    border: 3px solid var(--color-ink);
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .brut-input::placeholder {
+    color: var(--color-ink-soft);
+    opacity: 0.7;
+  }
+
+  .brut-label {
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
 }
 
 /* Tailwind v4 preflight leaves buttons with cursor: default. */
@@ -43,7 +132,7 @@ button:disabled {
 
 /* Keyboard focus must be visible everywhere, not just on inputs. */
 :focus-visible {
-  outline: 2px solid var(--color-blush);
+  outline: 3px solid var(--color-blush-deep);
   outline-offset: 2px;
 }
 

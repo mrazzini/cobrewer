@@ -4,12 +4,12 @@
  */
 
 function Bar({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded-md bg-peri-well/60 ${className}`} />;
+  return <div className={`animate-pulse rounded-md bg-ink/15 ${className}`} />;
 }
 
 export function BeanCardSkeleton() {
   return (
-    <div aria-hidden className="flex flex-col gap-3 rounded-xl bg-peri-deep/70 p-5">
+    <div aria-hidden className="brut-card flex flex-col gap-3 p-5">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 space-y-2">
           <Bar className="h-4 w-3/4" />
@@ -23,14 +23,14 @@ export function BeanCardSkeleton() {
         <Bar className="h-6 w-14 rounded-full" />
       </div>
       <Bar className="h-3 w-2/3" />
-      <Bar className="mt-auto h-8 w-full" />
+      <Bar className="mt-auto h-9 w-full rounded-xl" />
     </div>
   );
 }
 
 export function BrewCardSkeleton() {
   return (
-    <div aria-hidden className="rounded-xl bg-peri-deep/70 p-5">
+    <div aria-hidden className="brut-card p-5">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex-1 space-y-2">
           <Bar className="h-4 w-1/2" />

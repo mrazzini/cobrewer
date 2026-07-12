@@ -15,20 +15,20 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-peri-well/50 bg-peri/90 backdrop-blur">
-      <nav className="mx-auto flex max-w-5xl items-center gap-2 px-3 py-3 sm:gap-6 sm:px-6 sm:py-4">
-        <Link href="/" className="font-display text-lg tracking-wide sm:text-xl">
-          <span className="text-blush">Co</span>brewer
+    <header className="sticky top-0 z-50 border-b-[3px] border-ink bg-cream text-ink">
+      <nav className="mx-auto flex max-w-5xl items-center gap-2 px-3 py-3 sm:gap-6 sm:px-6">
+        <Link href="/" className="poster text-lg sm:text-xl">
+          <span className="text-blush-deep">Co</span>brewer
         </Link>
-        <div className="flex flex-1 items-center gap-0.5 text-[13px] sm:gap-1 sm:text-sm">
+        <div className="flex flex-1 items-center gap-0.5 text-[11px] font-bold uppercase tracking-tight sm:gap-1.5 sm:text-[13px] sm:tracking-wide">
           {LINKS.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className={`whitespace-nowrap rounded-md px-2 py-1.5 transition-colors sm:px-3 ${
+              className={`whitespace-nowrap rounded-full px-1.5 py-1.5 transition-colors sm:px-3.5 ${
                 pathname.startsWith(href)
-                  ? "bg-blush font-semibold text-ink"
-                  : "text-cream-dim hover:text-cream"
+                  ? "bg-ink text-olive"
+                  : "text-ink hover:bg-ink/10"
               }`}
             >
               {label}
@@ -39,7 +39,7 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
           <>
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="rounded-md bg-blush px-4 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-blush-deep">
+                <button className="brut-btn px-4 py-1.5 text-xs shadow-[3px_3px_0_var(--color-ink)]">
                   Sign in
                 </button>
               </SignInButton>
@@ -49,9 +49,7 @@ export default function Nav({ clerkEnabled }: { clerkEnabled: boolean }) {
             </SignedIn>
           </>
         ) : (
-          <span className="hidden rounded-md border border-cream/40 px-2.5 py-1 text-xs uppercase tracking-wide text-cream/80 sm:inline-block">
-            dev mode
-          </span>
+          <span className="brut-chip hidden bg-olive sm:inline-block">dev mode</span>
         )}
       </nav>
     </header>

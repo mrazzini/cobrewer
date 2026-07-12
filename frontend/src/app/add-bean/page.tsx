@@ -7,8 +7,7 @@ import { api } from "@/lib/api";
 import { PROCESSES, ROAST_LEVELS } from "@/lib/constants";
 import type { Bean, ExtractionResult, UserProfile } from "@/lib/types";
 
-const inputClass =
-  "rounded-md border border-transparent bg-peri-well px-3 py-2 text-sm text-cream placeholder:text-cream-dim/70 focus:border-cream/60 focus:outline-none";
+const inputClass = "brut-input";
 
 export default function AddBeanPage() {
   const fileInput = useRef<HTMLInputElement>(null);
@@ -106,26 +105,23 @@ export default function AddBeanPage() {
   if (created) {
     return (
       <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-        <h1 className="font-display mb-1 text-3xl tracking-tight">Bean Added</h1>
-        <section className="mt-6 rounded-xl bg-blush p-6 text-ink">
-          <p className="text-lg font-semibold">{created.name}</p>
-          <p className="text-sm text-ink/80">
+        <h1 className="poster poster-shadow mb-1 text-4xl">Bean Added</h1>
+        <section className="brut-card mt-6 bg-blush p-6">
+          <p className="poster text-xl">{created.name}</p>
+          <p className="text-sm font-semibold text-ink/80">
             {[created.roaster, created.origin].filter(Boolean).join(" · ")}
           </p>
-          <p className="mt-2 text-sm text-ink/80">
+          <p className="mt-2 text-sm font-medium text-ink/80">
             It joins the library as a community bean — searchable by everyone right away.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               href={`/dial-in?bean=${created.id}`}
-              className="rounded-md bg-ink px-4 py-2 text-sm font-semibold text-cream transition-opacity hover:opacity-80"
+              className="rounded-xl border-[3px] border-ink bg-ink px-4 py-2 text-sm font-bold text-cream transition-opacity hover:opacity-85"
             >
-              Dial it in →
+              Dial it in
             </Link>
-            <Link
-              href="/explore"
-              className="rounded-md border border-ink/40 px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-ink/10"
-            >
+            <Link href="/explore" className="brut-btn brut-btn-ghost px-4 py-2 shadow-[3px_3px_0_var(--color-ink)]">
               Back to Explore
             </Link>
           </div>
@@ -136,16 +132,16 @@ export default function AddBeanPage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="font-display mb-1 text-3xl tracking-tight">Add a Bean</h1>
-      <p className="mb-8 text-cream-dim">
+      <h1 className="poster poster-shadow mb-1 text-4xl">Add a Bean</h1>
+      <p className="mb-8 font-medium text-cream-dim">
         Coffee not in the library? Snap the bag and let AI fill in the details, or type them
         yourself.
       </p>
 
       {/* Step 1: photo extraction */}
-      <section className="mb-6 rounded-xl bg-peri-deep/70 p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
-          1 · Snap the bag <span className="normal-case">(optional)</span>
+      <section className="brut-card mb-6 p-5">
+        <h2 className="poster mb-3 text-[15px] tracking-wide">
+          1 · Snap the bag <span className="font-sans text-xs font-bold text-ink-soft">(optional)</span>
         </h2>
         <div className="flex flex-wrap items-center gap-3">
           <input
@@ -154,18 +150,18 @@ export default function AddBeanPage() {
             accept="image/jpeg,image/png,image/webp,image/heic"
             aria-label="Bag photo"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="text-sm text-cream-dim file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-peri-well file:px-4 file:py-2 file:text-sm file:text-cream"
+            className="text-sm font-medium text-ink-soft file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:font-bold file:text-cream"
           />
           <button
             onClick={extract}
             disabled={!file || extracting || creditsLeft === 0}
-            className="rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:cursor-not-allowed disabled:opacity-40"
+            className="brut-btn px-5 py-2"
           >
             {extracting ? "Reading the bag…" : "Extract details"}
           </button>
         </div>
         {creditsLeft != null && (
-          <p className="mt-3 text-xs text-cream-dim/80">
+          <p className="mt-3 text-xs font-semibold text-ink-soft">
             {creditsLeft === 0
               ? "You've used all your free extractions — the form below still works."
               : `${creditsLeft} of ${credits!.limit} free extractions left · each photo costs 1`}
@@ -174,12 +170,10 @@ export default function AddBeanPage() {
       </section>
 
       {/* Step 2: details */}
-      <section className="rounded-xl bg-peri-deep/70 p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
-          2 · Bean details
-        </h2>
+      <section className="brut-card p-5">
+        <h2 className="poster mb-4 text-[15px] tracking-wide">2 · Bean details</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Name *
             <input
               value={name}
@@ -188,7 +182,7 @@ export default function AddBeanPage() {
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Roaster
             <input
               value={roaster}
@@ -197,7 +191,7 @@ export default function AddBeanPage() {
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Origin
             <input
               value={origin}
@@ -206,7 +200,7 @@ export default function AddBeanPage() {
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Variety
             <input
               value={variety}
@@ -215,7 +209,7 @@ export default function AddBeanPage() {
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Process
             <select
               value={process}
@@ -230,7 +224,7 @@ export default function AddBeanPage() {
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Roast level
             <select
               value={roastLevel}
@@ -245,8 +239,8 @@ export default function AddBeanPage() {
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80 sm:col-span-2">
-            Tasting notes <span className="normal-case">(comma-separated)</span>
+          <label className="brut-label flex flex-col gap-1 text-ink-soft sm:col-span-2">
+            Tasting notes <span className="normal-case tracking-normal">(comma-separated)</span>
             <input
               value={tastingNotes}
               onChange={(e) => setTastingNotes(e.target.value)}
@@ -254,7 +248,7 @@ export default function AddBeanPage() {
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Cupping score
             <input
               type="number"
@@ -267,7 +261,7 @@ export default function AddBeanPage() {
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-cream-dim/80">
+          <label className="brut-label flex flex-col gap-1 text-ink-soft">
             Source URL
             <input
               type="url"
@@ -280,14 +274,10 @@ export default function AddBeanPage() {
         </div>
 
         {error && (
-          <p className="mt-4 rounded-md bg-blush/20 p-3 text-sm text-cream">{error}</p>
+          <p className="mt-4 rounded-xl border-[2.5px] border-ink bg-blush p-3 text-sm font-semibold text-ink">{error}</p>
         )}
 
-        <button
-          onClick={submit}
-          disabled={submitting}
-          className="mt-4 rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:opacity-40"
-        >
+        <button onClick={submit} disabled={submitting} className="brut-btn mt-4 px-6 py-2.5">
           {submitting ? "Saving…" : "Add to library"}
         </button>
       </section>

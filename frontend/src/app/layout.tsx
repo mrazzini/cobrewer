@@ -3,14 +3,20 @@ import { ClerkProvider } from "@clerk/nextjs";
 import localFont from "next/font/local";
 import "./globals.css";
 
-const baloo = localFont({
-  src: "../fonts/Baloo2-Variable.ttf",
-  variable: "--font-baloo",
+const rubik = localFont({
+  src: [
+    { path: "../fonts/Rubik-Regular.ttf", weight: "400" },
+    { path: "../fonts/Rubik-Medium.ttf", weight: "500" },
+    { path: "../fonts/Rubik-SemiBold.ttf", weight: "600" },
+    { path: "../fonts/Rubik-Bold.ttf", weight: "700" },
+    { path: "../fonts/Rubik-ExtraBold.ttf", weight: "800" },
+  ],
+  variable: "--font-rubik",
 });
 
-const shrikhand = localFont({
-  src: "../fonts/Shrikhand-Regular.ttf",
-  variable: "--font-shrikhand",
+const anton = localFont({
+  src: "../fonts/Anton-Regular.ttf",
+  variable: "--font-anton",
 });
 
 import AuthBridge from "@/components/AuthBridge";
@@ -29,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const shell = (
-    <html lang="en" className={`${baloo.variable} ${shrikhand.variable}`}>
+    <html lang="en" className={`${rubik.variable} ${anton.variable}`}>
       <body>
         <Nav clerkEnabled={clerkEnabled} />
         {children}
