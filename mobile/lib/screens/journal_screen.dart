@@ -5,11 +5,16 @@ import '../constants.dart';
 import '../models/models.dart';
 import '../theme.dart';
 import '../widgets/rating_stars.dart';
+import '../widgets/skeletons.dart';
 
 class JournalScreen extends StatefulWidget {
   final ApiClient api;
 
-  const JournalScreen({super.key, required this.api});
+  /// Bumped by the shell whenever a brew is logged elsewhere, so the
+  /// journal refetches even though IndexedStack keeps it alive.
+  final int refreshToken;
+
+  const JournalScreen({super.key, required this.api, this.refreshToken = 0});
 
   @override
   State<JournalScreen> createState() => _JournalScreenState();
@@ -17,7 +22,6 @@ class JournalScreen extends StatefulWidget {
 
 class _JournalScreenState extends State<JournalScreen> {
   List<BrewLog> _brews = [];
-  Map<String, Bean> _beans = {};
   bool _loading = true;
   String? _error;
 
@@ -27,57 +31,78 @@ class _JournalScreenState extends State<JournalScreen> {
     _fetch();
   }
 
-  Future<void> _fetch() async {
+  @override
+  void didUpdateWidget(covariant JournalScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.refreshToken != oldWidget.refreshToken) _fetch();
+  }
+
+  /// [silent] keeps the current list on screen (pull-to-refresh) instead of
+  /// swapping it for a full-screen spinner. Brews embed their bean summary,
+  /// so a single request is enough.
+  Future<void> _fetch({bool silent = false}) async {
     setState(() {
-      _loading = true;
+      if (!silent) _loading = true;
       _error = null;
     });
     final res = await widget.api.listBrews();
     if (!mounted) return;
-    if (!res.ok) {
-      setState(() {
-        _loading = false;
-        _error = res.error;
-      });
-      return;
-    }
-    final brews = res.data!;
-    final beanIds = brews.map((b) => b.beanId).toSet();
-    final beanResults =
-        await Future.wait(beanIds.map((id) => widget.api.getBean(id)));
-    if (!mounted) return;
     setState(() {
       _loading = false;
-      _brews = brews;
-      _beans = {
-        for (final r in beanResults)
-          if (r.ok) r.data!.id: r.data!,
-      };
+      if (res.ok) {
+        _brews = res.data!;
+      } else {
+        _error = res.error;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Journal',
-            style: TextStyle(fontWeight: FontWeight.w700)),
-        actions: [
-          IconButton(
-            onPressed: _fetch,
-            icon: const Icon(Icons.refresh, color: Palette.creamDim),
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
-      body: _body(),
+      backgroundColor: Colors.transparent,
+      body: SafeArea(bottom: false, child: _screen()),
     );
+  }
+
+  Widget _header({bool inList = false}) {
+    return PosterHeader(
+      title: 'BREW',
+      accent: 'JOURNAL',
+      banner: _brews.isEmpty
+          ? 'EVERY CUP MAKES IT SMARTER'
+          : '${_brews.length} BREW${_brews.length == 1 ? '' : 'S'} · GETTING SMARTER',
+      padding: inList
+          ? const EdgeInsets.fromLTRB(0, 14, 0, 6)
+          : const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      trailing: IconButton(
+        onPressed: () => _fetch(),
+        icon: const Icon(Icons.refresh, color: Palette.cream),
+        tooltip: 'Refresh',
+      ),
+    );
+  }
+
+  /// The header scrolls away with the entries; static only when there is
+  /// nothing scrollable behind it.
+  Widget _screen() {
+    if (_loading || _error != null || _brews.isEmpty) {
+      return Column(
+        children: [
+          _header(),
+          Expanded(child: _body()),
+        ],
+      );
+    }
+    return _body();
   }
 
   Widget _body() {
     if (_loading) {
-      return const Center(
-          child: CircularProgressIndicator(color: Palette.blush));
+      return SkeletonList(
+        count: 4,
+        itemBuilder: () => const BrewCardSkeleton(),
+      );
     }
     if (_error != null) {
       return Center(
@@ -93,84 +118,99 @@ class _JournalScreenState extends State<JournalScreen> {
     }
     if (_brews.isEmpty) {
       return const Center(
-        child: Text('No brews yet — dial one in!',
-            style: TextStyle(color: Palette.creamDim)),
+        child: Text(
+          'No brews yet — dial one in!',
+          style: TextStyle(color: Palette.creamDim),
+        ),
       );
     }
     return RefreshIndicator(
       color: Palette.blush,
-      onRefresh: _fetch,
+      onRefresh: () => _fetch(silent: true),
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _brews.length,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
+        itemCount: _brews.length + 1,
         separatorBuilder: (_, _) => const SizedBox(height: 10),
-        itemBuilder: (context, i) => _brewCard(_brews[i]),
+        itemBuilder: (context, i) => i == 0
+            ? _header(inList: true)
+            : KeyedSubtree(
+                key: ValueKey(_brews[i - 1].id),
+                child: _brewCard(_brews[i - 1]),
+              ),
       ),
     );
   }
 
   Widget _brewCard(BrewLog brew) {
-    final bean = _beans[brew.beanId];
+    final bean = brew.bean;
     final when = brew.timestamp.toLocal();
     final date =
         '${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
     final params = <String>[
       if (brew.doseG != null && brew.yieldG != null)
-        '${brew.doseG}g → ${brew.yieldG}g',
+        '${brew.doseG}g in · ${brew.yieldG}g out',
       if (brew.grindSetting != null)
         'grind ${brew.grindSetting} (${grinderLabel(brew.grinder)})',
       if (brew.waterTempC != null) '${brew.waterTempC}°C',
       if (brew.brewTimeSeconds != null) formatSeconds(brew.brewTimeSeconds!),
     ];
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    bean?.name ?? 'Unknown bean',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                        color: Palette.cream),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+    return BrutCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  (bean?.name ?? 'Unknown bean').toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'Anton',
+                    fontSize: 15,
+                    letterSpacing: 0.5,
+                    color: Palette.ink,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (brew.rating != null)
-                  RatingStars(rating: brew.rating!, size: 16),
-              ],
+              ),
+              if (brew.rating != null)
+                RatingStars(rating: brew.rating!, size: 16),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${brewerLabel(brew.brewer)} · $date'
+            '${brew.generatedBy == 'rules' ? ' · from recipe' : ''}',
+            style: const TextStyle(
+              color: Palette.inkSoft,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 4),
+          ),
+          if (params.isNotEmpty) ...[
+            const SizedBox(height: 6),
             Text(
-              '${brewerLabel(brew.brewer)} · $date'
-              '${brew.generatedBy == 'rules' ? ' · from recipe' : ''}',
-              style:
-                  const TextStyle(color: Palette.creamDim, fontSize: 13),
+              params.join(' · '),
+              style: const TextStyle(
+                color: Palette.inkSoft,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            if (params.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                params.join(' · '),
-                style: const TextStyle(color: Palette.creamDim, fontSize: 13),
-              ),
-            ],
-            if (brew.notes?.isNotEmpty ?? false) ...[
-              const SizedBox(height: 6),
-              Text(
-                brew.notes!,
-                style: const TextStyle(
-                    color: Palette.cream,
-                    fontSize: 13,
-                    fontStyle: FontStyle.italic),
-              ),
-            ],
           ],
-        ),
+          if (brew.notes?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 6),
+            Text(
+              brew.notes!,
+              style: const TextStyle(
+                color: Palette.ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

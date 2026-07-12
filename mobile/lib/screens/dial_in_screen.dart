@@ -29,16 +29,24 @@ class _DialInScreenState extends State<DialInScreen> {
   Bean? _bean;
   String _brewer = 'v60';
   String? _grinder;
+  bool _equipmentTouched = false;
 
   Recommendation? _rec;
   bool _loadingRec = false;
   String? _recError;
+
+  // Equipment + prefilled values the current recipe was computed with, so
+  // generated_by only says "rules" when the log actually matches the recipe.
+  String? _recBrewer;
+  String? _recGrinder;
+  Map<String, String> _prefill = const {};
 
   // Bean picker state (when no bean was carried over from Explore).
   final _beanSearchController = TextEditingController();
   Timer? _debounce;
   List<Bean> _beanResults = [];
   bool _searchingBeans = false;
+  String? _beanSearchError;
 
   // Brew log form.
   final _grindController = TextEditingController();
@@ -46,6 +54,7 @@ class _DialInScreenState extends State<DialInScreen> {
   final _yieldController = TextEditingController();
   final _tempController = TextEditingController();
   final _timeController = TextEditingController();
+  final _tdsController = TextEditingController();
   final _notesController = TextEditingController();
   int _rating = 0;
   bool _logging = false;
@@ -55,6 +64,21 @@ class _DialInScreenState extends State<DialInScreen> {
     super.initState();
     _bean = widget.initialBean;
     if (_bean == null) _searchBeans('');
+    _applyProfileDefaults();
+  }
+
+  /// Preselect the brewer/grinder saved in the profile — until the user
+  /// touches the dropdowns themselves.
+  Future<void> _applyProfileDefaults() async {
+    final res = await widget.api.getMe();
+    if (!mounted || !res.ok || _equipmentTouched) return;
+    final equipment = res.data!.equipment;
+    setState(() {
+      final g = matchGrinderKey(equipment);
+      if (g != null && _grinder == null) _grinder = g;
+      final b = matchBrewerKey(equipment);
+      if (b != null && _brewer == 'v60') _brewer = b;
+    });
   }
 
   @override
@@ -66,24 +90,31 @@ class _DialInScreenState extends State<DialInScreen> {
     _yieldController.dispose();
     _tempController.dispose();
     _timeController.dispose();
+    _tdsController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
   Future<void> _searchBeans(String query) async {
-    setState(() => _searchingBeans = true);
+    setState(() {
+      _searchingBeans = true;
+      _beanSearchError = null;
+    });
     final res = await widget.api.listBeans(search: query, limit: 15);
     if (!mounted) return;
     setState(() {
       _searchingBeans = false;
       _beanResults = res.data ?? [];
+      if (!res.ok) _beanSearchError = res.error ?? 'Could not load beans.';
     });
   }
 
   void _onBeanSearchChanged(String query) {
     _debounce?.cancel();
-    _debounce =
-        Timer(const Duration(milliseconds: 300), () => _searchBeans(query));
+    _debounce = Timer(
+      const Duration(milliseconds: 300),
+      () => _searchBeans(query),
+    );
   }
 
   Future<void> _getRecipe() async {
@@ -117,27 +148,89 @@ class _DialInScreenState extends State<DialInScreen> {
     _doseController.text = p.doseG.toString();
     _yieldController.text = p.yieldG.toString();
     _tempController.text = p.waterTempC.toString();
-    _timeController.text =
-        ((p.brewTimeMinSeconds + p.brewTimeMaxSeconds) ~/ 2).toString();
+    _timeController.text = ((p.brewTimeMinSeconds + p.brewTimeMaxSeconds) ~/ 2)
+        .toString();
+    _recBrewer = _brewer;
+    _recGrinder = _grinder;
+    _prefill = {
+      'grind': _grindController.text,
+      'dose': _doseController.text,
+      'yield': _yieldController.text,
+      'temp': _tempController.text,
+      'time': _timeController.text,
+    };
+  }
+
+  /// True only when equipment and every prefilled value still match the
+  /// fetched recipe — the generated_by label future ML training relies on.
+  bool get _logMatchesRecipe =>
+      _rec != null &&
+      _brewer == _recBrewer &&
+      _grinder == _recGrinder &&
+      _grindController.text == _prefill['grind'] &&
+      _doseController.text == _prefill['dose'] &&
+      _yieldController.text == _prefill['yield'] &&
+      _tempController.text == _prefill['temp'] &&
+      _timeController.text == _prefill['time'];
+
+  /// Parses a form value, accepting European decimal commas ("15,5").
+  /// Adds a message to [problems] when the text isn't a number or is
+  /// outside the given bounds; empty text is simply null.
+  double? _parseField(
+    TextEditingController controller,
+    String boundsKey,
+    List<String> problems,
+  ) {
+    final raw = controller.text.trim();
+    if (raw.isEmpty) return null;
+    final bounds = brewBounds[boundsKey]!;
+    final n = double.tryParse(raw.replaceAll(',', '.'));
+    if (n == null) {
+      problems.add("${bounds.label} isn't a number");
+      return null;
+    }
+    if (n < bounds.min || n > bounds.max) {
+      problems.add(
+        '${bounds.label} must be between ${bounds.min}${bounds.unit} and ${bounds.max}${bounds.unit}',
+      );
+      return null;
+    }
+    return n;
   }
 
   Future<void> _logBrew() async {
     final bean = _bean;
     if (bean == null) return;
+
+    final problems = <String>[];
+    final grind = _parseField(_grindController, 'grind_setting', problems);
+    final dose = _parseField(_doseController, 'dose_g', problems);
+    final yieldG = _parseField(_yieldController, 'yield_g', problems);
+    final temp = _parseField(_tempController, 'water_temp_c', problems);
+    final time = _parseField(_timeController, 'brew_time_seconds', problems);
+    final tds = _parseField(_tdsController, 'tds', problems);
+    if (problems.isNotEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(problems.join('. '))));
+      return;
+    }
+
     setState(() => _logging = true);
     final res = await widget.api.logBrew({
       'bean_id': bean.id,
       'brewer': _brewer,
       if (_grinder != null) 'grinder': _grinder,
-      'grind_setting': double.tryParse(_grindController.text),
-      'dose_g': double.tryParse(_doseController.text),
-      'yield_g': double.tryParse(_yieldController.text),
-      'water_temp_c': double.tryParse(_tempController.text),
-      'brew_time_seconds': int.tryParse(_timeController.text),
+      'grind_setting': grind,
+      'dose_g': dose,
+      'yield_g': yieldG,
+      'water_temp_c': temp,
+      'brew_time_seconds': time?.round(),
+      'tds': tds,
       if (_rating > 0) 'rating': _rating,
       if (_notesController.text.trim().isNotEmpty)
         'notes': _notesController.text.trim(),
-      'generated_by': _rec != null ? 'rules' : 'manual',
+      'generated_by': _logMatchesRecipe ? 'rules' : 'manual',
     });
     if (!mounted) return;
     setState(() => _logging = false);
@@ -157,55 +250,113 @@ class _DialInScreenState extends State<DialInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title:
-            const Text('Dial-in', style: TextStyle(fontWeight: FontWeight.w700)),
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        bottom: false,
+        child: _bean == null ? _beanPicker() : _dialInFlow(),
       ),
-      body: _bean == null ? _beanPicker() : _dialInFlow(),
+    );
+  }
+
+  static const _header = PosterHeader(
+    title: 'DIAL',
+    accent: 'IT IN',
+    banner: 'RECIPE TUNED TO YOUR GEAR',
+    padding: EdgeInsets.fromLTRB(0, 14, 0, 12),
+  );
+
+  Widget _pickerSearchField() {
+    return brutShadow(
+      radius: 12,
+      shadow: 4,
+      child: TextField(
+        controller: _beanSearchController,
+        onChanged: _onBeanSearchChanged,
+        style: const TextStyle(color: Palette.ink, fontWeight: FontWeight.w500),
+        decoration: const InputDecoration(
+          hintText: 'Pick a bean to dial in…',
+          prefixIcon: Icon(Icons.search, color: Palette.inkSoft),
+        ),
+      ),
     );
   }
 
   Widget _beanPicker() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: TextField(
-            controller: _beanSearchController,
-            onChanged: _onBeanSearchChanged,
-            decoration: const InputDecoration(
-              hintText: 'Pick a bean to dial in…',
-              prefixIcon: Icon(Icons.search, color: Palette.creamDim),
-            ),
+    if (_searchingBeans || _beanSearchError != null || _beanResults.isEmpty) {
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(children: [_header, _pickerSearchField()]),
           ),
+          Expanded(child: _beanPickerResults()),
+        ],
+      );
+    }
+    return _beanPickerResults();
+  }
+
+  Widget _beanPickerResults() {
+    if (_searchingBeans) {
+      return const Center(
+        child: CircularProgressIndicator(color: Palette.blush),
+      );
+    }
+    if (_beanSearchError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _beanSearchError!,
+              style: const TextStyle(color: Palette.creamDim),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => _searchBeans(_beanSearchController.text),
+              child: const Text('Retry'),
+            ),
+          ],
         ),
-        Expanded(
-          child: _searchingBeans
-              ? const Center(
-                  child: CircularProgressIndicator(color: Palette.blush))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _beanResults.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (context, i) {
-                    final bean = _beanResults[i];
-                    return BeanCard(
-                      bean: bean,
-                      compact: true,
-                      onTap: () => setState(() => _bean = bean),
-                    );
-                  },
-                ),
+      );
+    }
+    if (_beanResults.isEmpty) {
+      final query = _beanSearchController.text.trim();
+      return Center(
+        child: Text(
+          query.isEmpty
+              ? 'No beans in the library yet.'
+              : 'Nothing matches “$query” — try another name.',
+          style: const TextStyle(color: Palette.creamDim),
+          textAlign: TextAlign.center,
         ),
-      ],
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
+      itemCount: _beanResults.length + 1,
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      itemBuilder: (context, i) {
+        if (i == 0) {
+          return Column(children: [_header, _pickerSearchField()]);
+        }
+        final bean = _beanResults[i - 1];
+        return BeanCard(
+          key: ValueKey(bean.id),
+          bean: bean,
+          compact: true,
+          onTap: () => setState(() => _bean = bean),
+        );
+      },
     );
   }
 
   Widget _dialInFlow() {
     final bean = _bean!;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
       children: [
+        _header,
         _sectionTitle('1 · Bean'),
         BeanCard(bean: bean, compact: true),
         Align(
@@ -216,44 +367,79 @@ class _DialInScreenState extends State<DialInScreen> {
               _rec = null;
               _searchBeans(_beanSearchController.text);
             }),
-            child: const Text('Change bean',
-                style: TextStyle(color: Palette.blush)),
+            child: const Text(
+              'Change bean',
+              style: TextStyle(
+                color: Palette.cream,
+                fontWeight: FontWeight.w700,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
         ),
         _sectionTitle('2 · Equipment'),
-        DropdownButtonFormField<String>(
-          value: _brewer,
-          decoration: const InputDecoration(labelText: 'Brewer'),
-          dropdownColor: Palette.periWell,
-          items: [
-            for (final b in brewers)
-              DropdownMenuItem(value: b.key, child: Text(b.label)),
-          ],
-          onChanged: (v) => setState(() => _brewer = v ?? _brewer),
+        brutShadow(
+          radius: 12,
+          child: DropdownButtonFormField<String>(
+            value: _brewer,
+            decoration: const InputDecoration(labelText: 'Brewer'),
+            style: const TextStyle(
+              color: Palette.ink,
+              fontFamily: 'Rubik',
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            ),
+            dropdownColor: Palette.cream,
+            items: [
+              for (final b in brewers)
+                DropdownMenuItem(value: b.key, child: Text(b.label)),
+            ],
+            onChanged: (v) => setState(() {
+              _brewer = v ?? _brewer;
+              _equipmentTouched = true;
+            }),
+          ),
         ),
         const SizedBox(height: 10),
-        DropdownButtonFormField<String?>(
-          value: _grinder,
-          decoration: const InputDecoration(labelText: 'Grinder (optional)'),
-          dropdownColor: Palette.periWell,
-          items: [
-            const DropdownMenuItem<String?>(
-                value: null, child: Text('No grinder / other')),
-            for (final g in grinders)
-              DropdownMenuItem<String?>(value: g.key, child: Text(g.label)),
-          ],
-          onChanged: (v) => setState(() => _grinder = v),
+        brutShadow(
+          radius: 12,
+          child: DropdownButtonFormField<String?>(
+            value: _grinder,
+            decoration: const InputDecoration(labelText: 'Grinder (optional)'),
+            style: const TextStyle(
+              color: Palette.ink,
+              fontFamily: 'Rubik',
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            ),
+            dropdownColor: Palette.cream,
+            items: [
+              const DropdownMenuItem<String?>(
+                value: null,
+                child: Text('No grinder / other'),
+              ),
+              for (final g in grinders)
+                DropdownMenuItem<String?>(value: g.key, child: Text(g.label)),
+            ],
+            onChanged: (v) => setState(() {
+              _grinder = v;
+              _equipmentTouched = true;
+            }),
+          ),
         ),
         const SizedBox(height: 14),
-        FilledButton(
+        BrutButton(
+          expand: true,
+          label: _loadingRec ? 'COMPUTING…' : 'GET RECIPE',
           onPressed: _loadingRec ? null : _getRecipe,
-          child: Text(_loadingRec ? 'Computing…' : 'Get recipe'),
         ),
         if (_recError != null)
           Padding(
             padding: const EdgeInsets.only(top: 10),
-            child: Text(_recError!,
-                style: const TextStyle(color: Color(0xFFF87171))),
+            child: Text(
+              _recError!,
+              style: const TextStyle(color: Palette.blushDeep),
+            ),
           ),
         if (_rec?.parameters != null) ...[
           _sectionTitle('3 · Recipe'),
@@ -269,14 +455,30 @@ class _DialInScreenState extends State<DialInScreen> {
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 10),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Palette.blush,
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-          letterSpacing: 1.1,
-        ),
+      child: Builder(
+        builder: (context) {
+          final parts = text.toUpperCase().split(' · ');
+          const style = TextStyle(
+            fontFamily: 'Anton',
+            color: Palette.cream,
+            fontSize: 17,
+            letterSpacing: 1,
+            shadows: [Shadow(color: Palette.ink, offset: Offset(2, 2))],
+          );
+          if (parts.length < 2) return Text(text.toUpperCase(), style: style);
+          return Text.rich(
+            TextSpan(
+              style: style,
+              children: [
+                TextSpan(
+                  text: '${parts[0]} · ',
+                  style: const TextStyle(color: Palette.blush),
+                ),
+                TextSpan(text: parts.sublist(1).join(' · ')),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -293,127 +495,165 @@ class _DialInScreenState extends State<DialInScreen> {
       ('Time', formatBrewTime(p.brewTimeMinSeconds, p.brewTimeMaxSeconds)),
       if (p.pressureBar != null) ('Pressure', '${p.pressureBar} bar'),
     ];
-    return Container(
-      decoration: BoxDecoration(
-        color: Palette.blush,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (final (label, value) in stats)
-                  SizedBox(
-                    width: 96,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(label,
-                            style: const TextStyle(
-                                color: Palette.inkSoft, fontSize: 12)),
-                        const SizedBox(height: 2),
-                        Text(value,
-                            style: const TextStyle(
-                                color: Palette.ink,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15)),
-                      ],
-                    ),
+    return BrutCard(
+      color: Palette.blush,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final (label, value) in stats)
+                Container(
+                  width: 100,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 7,
                   ),
-              ],
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Palette.ink, width: 2.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        label.toUpperCase(),
+                        style: const TextStyle(
+                          color: Palette.inkSoft,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        value,
+                        style: const TextStyle(
+                          fontFamily: 'Anton',
+                          color: Palette.ink,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          if (p.grindSetting.converted)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                'Converted from ${p.grindSettingC40Clicks} C40 clicks for ${grinderLabel(p.grindSetting.grinder)}.',
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            if (p.grindSetting.converted)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  'Converted from ${p.grindSettingC40Clicks} C40 clicks for ${grinderLabel(p.grindSetting.grinder)}.',
-                  style: const TextStyle(
-                      color: Palette.inkSoft, fontSize: 12),
+          for (final note in p.notes)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                note,
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            for (final note in p.notes)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('•  ',
-                        style: TextStyle(color: Palette.ink)),
-                    Expanded(
-                      child: Text(note,
-                          style: const TextStyle(
-                              color: Palette.inkSoft, fontSize: 13)),
-                    ),
-                  ],
+            ),
+          if (rec.confidenceScore != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                'Confidence ${(rec.confidenceScore! * 100).round()}%',
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
                 ),
               ),
-            if (rec.confidenceScore != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  'Confidence ${(rec.confidenceScore! * 100).round()}%',
-                  style:
-                      const TextStyle(color: Palette.inkSoft, fontSize: 12),
-                ),
-              ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _logForm() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _numField(_grindController, 'Grind setting')),
-            const SizedBox(width: 10),
-            Expanded(child: _numField(_doseController, 'Dose (g)')),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _numField(_yieldController, 'Yield (g)')),
-            const SizedBox(width: 10),
-            Expanded(child: _numField(_tempController, 'Water (°C)')),
-          ],
-        ),
-        const SizedBox(height: 10),
-        _numField(_timeController, 'Brew time (seconds)'),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _notesController,
-          maxLines: 2,
-          decoration: const InputDecoration(labelText: 'Notes'),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            const Text('Rating',
-                style: TextStyle(color: Palette.creamDim)),
-            const SizedBox(width: 10),
-            RatingStars(
-              rating: _rating,
-              onChanged: (v) => setState(() => _rating = v),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _logging ? null : _logBrew,
-            child: Text(_logging ? 'Logging…' : 'Log brew'),
+    return BrutCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _numField(_grindController, 'Grind setting')),
+              const SizedBox(width: 10),
+              Expanded(child: _numField(_doseController, 'Dose (g)')),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _numField(_yieldController, 'Yield (g)')),
+              const SizedBox(width: 10),
+              Expanded(child: _numField(_tempController, 'Water (°C)')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _numField(_timeController, 'Brew time (seconds)'),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: _numField(_tdsController, 'TDS % (optional)')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _notesController,
+            maxLines: 2,
+            style: const TextStyle(
+              color: Palette.ink,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: const InputDecoration(
+              labelText: 'Notes',
+              fillColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Text(
+                'RATING',
+                style: TextStyle(
+                  color: Palette.ink,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 10),
+              RatingStars(
+                rating: _rating,
+                onChanged: (v) => setState(() => _rating = v),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          BrutButton(
+            expand: true,
+            label: _logging ? 'LOGGING…' : 'LOG BREW',
+            onPressed: _logging ? null : _logBrew,
+          ),
+        ],
+      ),
     );
   }
 
@@ -421,7 +661,8 @@ class _DialInScreenState extends State<DialInScreen> {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(labelText: label),
+      style: const TextStyle(color: Palette.ink, fontWeight: FontWeight.w500),
+      decoration: InputDecoration(labelText: label, fillColor: Colors.white),
     );
   }
 }

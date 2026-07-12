@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_current_user
 from app.db.models import Bean, BrewLog, User
@@ -26,7 +27,11 @@ async def create_brew(
     brew = BrewLog(**payload.model_dump(), user_id=user.id)
     session.add(brew)
     await session.commit()
-    await session.refresh(brew)
+    # Re-select with the bean eagerly loaded — lazy loads raise in async sessions.
+    result = await session.execute(
+        select(BrewLog).options(selectinload(BrewLog.bean)).where(BrewLog.id == brew.id)
+    )
+    brew = result.scalar_one()
     return ApiResponse(data=BrewLogOut.model_validate(brew).model_dump(mode="json"))
 
 
@@ -37,7 +42,7 @@ async def list_brews(
     session: AsyncSession = Depends(get_session),
     user: User = Depends(get_current_user),
 ) -> ApiResponse:
-    query = select(BrewLog).where(BrewLog.user_id == user.id)
+    query = select(BrewLog).options(selectinload(BrewLog.bean)).where(BrewLog.user_id == user.id)
     total = await session.scalar(select(func.count()).select_from(query.subquery()))
     result = await session.execute(
         query.order_by(BrewLog.timestamp.desc()).limit(limit).offset(offset)

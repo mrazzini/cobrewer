@@ -43,6 +43,9 @@ class _HomeShellState extends State<HomeShell> {
   /// Bean carried from Explore into Dial-in ("Dial this in" action).
   Bean? _dialInBean;
 
+  /// Incremented whenever a brew is logged so the journal refetches.
+  int _journalRefresh = 0;
+
   void _dialIn(Bean bean) {
     setState(() {
       _dialInBean = bean;
@@ -59,22 +62,69 @@ class _HomeShellState extends State<HomeShell> {
         // Rebuild the dial-in flow when a new bean is carried over.
         key: ValueKey(_dialInBean?.id ?? 'none'),
         initialBean: _dialInBean,
-        onLogged: () => setState(() => _tab = 2),
+        onLogged: () => setState(() {
+          _tab = 2;
+          _journalRefresh++;
+        }),
       ),
-      JournalScreen(api: widget.api),
+      JournalScreen(api: widget.api, refreshToken: _journalRefresh),
       ProfileScreen(api: widget.api),
     ];
 
+    // The nav pill floats in a Stack so list content scrolls underneath it
+    // (screens pad their scrollables by ~100px at the bottom).
     return Scaffold(
-      body: IndexedStack(index: _tab, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.search), label: 'Explore'),
-          NavigationDestination(icon: Icon(Icons.tune), label: 'Dial-in'),
-          NavigationDestination(icon: Icon(Icons.menu_book), label: 'Journal'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StripedCanvas()),
+          Positioned.fill(child: IndexedStack(index: _tab, children: pages)),
+          Positioned(
+            left: 14,
+            right: 14,
+            bottom: 0,
+            child: SafeArea(
+              minimum: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: brutBox(radius: 999, shadow: 5),
+                child: Row(
+                  children: [
+                    for (final (i, label) in const [
+                      (0, 'EXPLORE'),
+                      (1, 'DIAL-IN'),
+                      (2, 'JOURNAL'),
+                      (3, 'PROFILE'),
+                    ])
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => setState(() => _tab = i),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: _tab == i
+                                ? BoxDecoration(
+                                    color: Palette.ink,
+                                    borderRadius: BorderRadius.circular(999),
+                                  )
+                                : null,
+                            child: Text(
+                              label,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                                color: _tab == i ? Palette.olive : Palette.ink,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

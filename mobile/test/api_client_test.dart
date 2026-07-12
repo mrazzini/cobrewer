@@ -140,4 +140,15 @@ void main() {
     await api.getMe();
     expect(captured.headers['authorization'], 'Bearer clerk-session-token');
   });
+
+  test('naive UTC timestamps parse as UTC so toLocal() can shift them', () {
+    final naive = Map<String, dynamic>.from(brewLogJson)
+      ..['timestamp'] = '2026-07-11T09:30:00.123456';
+    final brew = BrewLog.fromJson(naive);
+    expect(brew.timestamp.isUtc, isTrue);
+    expect(brew.timestamp.hour, 9);
+
+    final zoned = BrewLog.fromJson(Map<String, dynamic>.from(brewLogJson));
+    expect(zoned.timestamp.isUtc, isTrue);
+  });
 }

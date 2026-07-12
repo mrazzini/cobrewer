@@ -36,6 +36,28 @@ export function roastLabel(key: string | null): string {
   return ROAST_LEVELS.find((r) => r.key === key)?.label ?? key;
 }
 
+export function brewerLabel(key: string | null): string {
+  if (!key) return "—";
+  return BREWERS.find((b) => b.key === key)?.label ?? key.replace(/_/g, " ");
+}
+
+export function grinderLabel(key: string | null): string {
+  if (!key) return "—";
+  return GRINDERS.find((g) => g.key === key)?.label ?? key.replace(/_/g, " ");
+}
+
+// Client-side mirror of the backend's BrewLogCreate bounds.
+export const BREW_BOUNDS = {
+  grind_setting: { min: 0, max: 500, label: "Grind setting", unit: "" },
+  dose_g: { min: 0.1, max: 200, label: "Dose", unit: " g" },
+  yield_g: { min: 0.1, max: 2000, label: "Yield", unit: " g" },
+  water_temp_c: { min: 1, max: 100, label: "Water temp", unit: " °C" },
+  brew_time_seconds: { min: 1, max: 7200, label: "Brew time", unit: " s" },
+  tds: { min: 0, max: 20, label: "TDS", unit: "%" },
+} as const;
+
+export type BrewBoundsKey = keyof typeof BREW_BOUNDS;
+
 export function formatBrewTime(range: { min: number; max: number }): string {
   const fmt = (s: number) =>
     s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : `${s}s`;

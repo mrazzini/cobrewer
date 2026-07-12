@@ -2,6 +2,8 @@
 /// (mirrors frontend/src/lib/constants.ts).
 library;
 
+import 'models/models.dart';
+
 class Option {
   final String key;
   final String label;
@@ -82,6 +84,59 @@ String grinderLabel(String? key) {
 String processLabel(String? key) {
   if (key == null || key.isEmpty) return '—';
   return key.replaceAll('_', ' ');
+}
+
+/// Client-side mirror of the backend's BrewLogCreate bounds.
+class BrewBound {
+  final double min;
+  final double max;
+  final String label;
+  final String unit;
+  const BrewBound(this.min, this.max, this.label, this.unit);
+}
+
+const brewBounds = <String, BrewBound>{
+  'grind_setting': BrewBound(0, 500, 'Grind setting', ''),
+  'dose_g': BrewBound(0.1, 200, 'Dose', ' g'),
+  'yield_g': BrewBound(0.1, 2000, 'Yield', ' g'),
+  'water_temp_c': BrewBound(1, 100, 'Water temp', ' °C'),
+  'brew_time_seconds': BrewBound(1, 7200, 'Brew time', ' s'),
+  'tds': BrewBound(0, 20, 'TDS', '%'),
+};
+
+String _normEquip(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+/// Best-effort map of free-text profile equipment onto a grinder key.
+/// Prefers the longest label contained in the entry so "1Zpresso JX-Pro"
+/// beats "1Zpresso JX"; falls back to model-only entries like "JX-Pro".
+String? matchGrinderKey(List<Equipment> equipment) {
+  for (final row in equipment.where((e) => e.equipmentType == 'grinder')) {
+    final cand = _normEquip('${row.brand ?? ''}${row.model ?? ''}');
+    if (cand.length < 2) continue;
+    final hits = grinders.where((g) {
+      final label = _normEquip(g.label);
+      return cand.contains(label) || (cand.length >= 4 && label.contains(cand));
+    }).toList()
+      ..sort((a, b) => _normEquip(b.label).length.compareTo(_normEquip(a.label).length));
+    if (hits.isNotEmpty) return hits.first.key;
+  }
+  return null;
+}
+
+const _brewerHints = [
+  ('espresso', ['espresso']),
+  ('v60', ['v60', 'pourover', 'hario']),
+  ('french_press', ['frenchpress', 'press']),
+];
+
+String? matchBrewerKey(List<Equipment> equipment) {
+  for (final row in equipment.where((e) => e.equipmentType == 'brewer')) {
+    final cand = _normEquip('${row.brand ?? ''}${row.model ?? ''}');
+    for (final (key, hints) in _brewerHints) {
+      if (hints.any(cand.contains)) return key;
+    }
+  }
+  return null;
 }
 
 String formatSeconds(int s) {

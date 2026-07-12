@@ -20,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<Equipment> _equipment = [];
   bool _loading = true;
   bool _saving = false;
+  bool _dirty = false;
   String? _error;
 
   @override
@@ -52,13 +53,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     setState(() {
       _saving = false;
-      if (res.ok) _equipment = List.of(res.data!);
+      if (res.ok) {
+        _equipment = List.of(res.data!);
+        _dirty = false;
+      }
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(res.ok
-            ? 'Equipment saved.'
-            : (res.error ?? 'Could not save equipment.')),
+        content: Text(
+          res.ok
+              ? 'Equipment saved.'
+              : (res.error ?? 'Could not save equipment.'),
+        ),
       ),
     );
   }
@@ -66,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editEquipment({Equipment? existing, int? index}) async {
     final result = await showModalBottomSheet<Equipment>(
       context: context,
-      backgroundColor: Palette.periWell,
+      backgroundColor: Palette.cream,
       isScrollControlled: true,
       builder: (context) => _EquipmentSheet(existing: existing),
     );
@@ -77,24 +83,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else {
         _equipment.add(result);
       }
+      _dirty = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile',
-            style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
-      body: _body(),
+      backgroundColor: Colors.transparent,
+      body: SafeArea(bottom: false, child: _screen()),
     );
+  }
+
+  Widget _screen() {
+    if (_loading || _error != null) {
+      return Column(
+        children: [
+          const PosterHeader(
+            title: 'YOUR',
+            accent: 'SETUP',
+            banner: 'GEAR IN, BETTER CUPS OUT',
+          ),
+          Expanded(child: _body()),
+        ],
+      );
+    }
+    return _body();
   }
 
   Widget _body() {
     if (_loading) {
       return const Center(
-          child: CircularProgressIndicator(color: Palette.blush));
+        child: CircularProgressIndicator(color: Palette.blush),
+      );
     }
     if (_error != null) {
       return Center(
@@ -110,24 +131,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     final profile = _profile!;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 104),
       children: [
-        Card(
+        const PosterHeader(
+          title: 'YOUR',
+          accent: 'SETUP',
+          banner: 'GEAR IN, BETTER CUPS OUT',
+          padding: EdgeInsets.fromLTRB(0, 14, 0, 12),
+        ),
+        BrutCard(
+          padding: EdgeInsets.zero,
           child: ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Palette.blushDeep,
-              child: Icon(Icons.person, color: Palette.cream),
+            leading: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Palette.blush,
+                shape: BoxShape.circle,
+                border: Border.all(color: Palette.ink, width: 2.5),
+              ),
+              child: const Icon(Icons.person, color: Palette.ink),
             ),
             title: Text(
-              profile.displayName ?? profile.clerkId,
+              (profile.displayName ?? profile.clerkId).toUpperCase(),
               style: const TextStyle(
-                  color: Palette.cream, fontWeight: FontWeight.w600),
+                fontFamily: 'Anton',
+                color: Palette.ink,
+                fontSize: 16,
+                letterSpacing: 0.5,
+              ),
             ),
-            subtitle: Text(
-              'AI extractions: ${profile.aiCredits.remaining} of '
-              '${profile.aiCredits.extractionsLimit} left',
-              style: const TextStyle(color: Palette.creamDim, fontSize: 13),
+            subtitle: const Text(
+              'Your brewing profile',
+              style: TextStyle(
+                color: Palette.inkSoft,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        BrutCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'AI BAG SCANS',
+                      style: TextStyle(
+                        fontFamily: 'Anton',
+                        color: Palette.ink,
+                        fontSize: 15,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Palette.olive,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: Palette.ink, width: 2),
+                    ),
+                    child: Text(
+                      '${profile.aiCredits.remaining} OF ${profile.aiCredits.extractionsLimit} LEFT',
+                      style: const TextStyle(
+                        color: Palette.ink,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  for (var i = 0; i < profile.aiCredits.extractionsLimit; i++)
+                    Container(
+                      width: 34,
+                      height: 12,
+                      margin: const EdgeInsets.only(right: 7),
+                      decoration: BoxDecoration(
+                        color: i < profile.aiCredits.remaining
+                            ? Palette.olive
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: Palette.ink, width: 2.5),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 9),
+              const Text(
+                'Snap a bag photo to add a bean automatically.',
+                style: TextStyle(
+                  color: Palette.inkSoft,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
@@ -137,18 +248,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 'MY EQUIPMENT',
                 style: TextStyle(
-                  color: Palette.blush,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  letterSpacing: 1.1,
+                  fontFamily: 'Anton',
+                  color: Palette.cream,
+                  fontSize: 17,
+                  letterSpacing: 1,
+                  shadows: [Shadow(color: Palette.ink, offset: Offset(2, 2))],
                 ),
               ),
             ),
-            TextButton.icon(
+            OutlinedButton.icon(
               onPressed: () => _editEquipment(),
-              icon: const Icon(Icons.add, size: 18, color: Palette.blush),
-              label:
-                  const Text('Add', style: TextStyle(color: Palette.blush)),
+              icon: const Icon(Icons.add, size: 18, color: Palette.ink),
+              label: const Text('ADD'),
             ),
           ],
         ),
@@ -161,7 +272,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         for (var i = 0; i < _equipment.length; i++) ...[
-          Card(
+          BrutCard(
+            padding: EdgeInsets.zero,
+            shadow: 4,
             child: ListTile(
               title: Text(
                 [
@@ -170,7 +283,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   if (_equipment[i].model?.isNotEmpty ?? false)
                     _equipment[i].model!,
                 ].join(' '),
-                style: const TextStyle(color: Palette.cream, fontSize: 14),
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               subtitle: Text(
                 [
@@ -179,22 +296,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     '${_equipment[i].burrType} burrs',
                 ].join(' · '),
                 style: const TextStyle(
-                    color: Palette.creamDim, fontSize: 12),
+                  color: Palette.inkSoft,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               onTap: () => _editEquipment(existing: _equipment[i], index: i),
               trailing: IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    size: 20, color: Palette.creamDim),
-                onPressed: () => setState(() => _equipment.removeAt(i)),
+                icon: const Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: Palette.inkSoft,
+                ),
+                onPressed: () => setState(() {
+                  _equipment.removeAt(i);
+                  _dirty = true;
+                }),
               ),
             ),
           ),
           const SizedBox(height: 8),
         ],
         const SizedBox(height: 8),
-        FilledButton(
+        if (_dirty)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Unsaved changes',
+              style: TextStyle(
+                color: Palette.cream,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        BrutButton(
+          expand: true,
+          label: _saving ? 'SAVING…' : 'SAVE EQUIPMENT',
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? 'Saving…' : 'Save equipment'),
         ),
       ],
     );
@@ -212,12 +353,16 @@ class _EquipmentSheet extends StatefulWidget {
 
 class _EquipmentSheetState extends State<_EquipmentSheet> {
   late String _type = widget.existing?.equipmentType ?? 'brewer';
-  late final _brandController =
-      TextEditingController(text: widget.existing?.brand ?? '');
-  late final _modelController =
-      TextEditingController(text: widget.existing?.model ?? '');
-  late final _burrController =
-      TextEditingController(text: widget.existing?.burrType ?? '');
+  late final _brandController = TextEditingController(
+    text: widget.existing?.brand ?? '',
+  );
+  late final _modelController = TextEditingController(
+    text: widget.existing?.model ?? '',
+  );
+  late final _burrController = TextEditingController(
+    text: widget.existing?.burrType ?? '',
+  );
+  String? _validationError;
 
   @override
   void dispose() {
@@ -231,23 +376,35 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          16, 16, 16, 16 + MediaQuery.of(context).viewInsets.bottom),
+        16,
+        16,
+        16,
+        16 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            widget.existing == null ? 'Add equipment' : 'Edit equipment',
+            widget.existing == null ? 'ADD EQUIPMENT' : 'EDIT EQUIPMENT',
             style: const TextStyle(
-                color: Palette.cream,
-                fontWeight: FontWeight.w700,
-                fontSize: 16),
+              fontFamily: 'Anton',
+              color: Palette.ink,
+              fontSize: 18,
+              letterSpacing: 0.8,
+            ),
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
             value: _type,
             decoration: const InputDecoration(labelText: 'Type'),
-            dropdownColor: Palette.periWell,
+            style: const TextStyle(
+              color: Palette.ink,
+              fontFamily: 'Rubik',
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            ),
+            dropdownColor: Palette.cream,
             items: [
               for (final t in _equipmentTypes)
                 DropdownMenuItem(value: t, child: Text(t)),
@@ -257,42 +414,69 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
           const SizedBox(height: 10),
           TextField(
             controller: _brandController,
+            style: const TextStyle(
+              color: Palette.ink,
+              fontWeight: FontWeight.w500,
+            ),
             decoration: const InputDecoration(labelText: 'Brand'),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _modelController,
+            style: const TextStyle(
+              color: Palette.ink,
+              fontWeight: FontWeight.w500,
+            ),
             decoration: const InputDecoration(labelText: 'Model'),
           ),
           if (_type == 'grinder') ...[
             const SizedBox(height: 10),
             TextField(
               controller: _burrController,
-              decoration:
-                  const InputDecoration(labelText: 'Burr type (conical/flat)'),
+              style: const TextStyle(
+                color: Palette.ink,
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Burr type (conical/flat)',
+              ),
+            ),
+          ],
+          if (_validationError != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              _validationError!,
+              style: const TextStyle(color: Palette.blushDeep, fontSize: 13),
             ),
           ],
           const SizedBox(height: 16),
-          FilledButton(
+          BrutButton(
+            expand: true,
+            label: 'DONE',
             onPressed: () {
+              final brand = _brandController.text.trim();
+              final model = _modelController.text.trim();
+              if (brand.isEmpty && model.isEmpty) {
+                setState(
+                  () =>
+                      _validationError = 'Give it at least a brand or a model.',
+                );
+                return;
+              }
               Navigator.pop(
                 context,
                 Equipment(
                   equipmentType: _type,
-                  brand: _brandController.text.trim().isEmpty
-                      ? null
-                      : _brandController.text.trim(),
-                  model: _modelController.text.trim().isEmpty
-                      ? null
-                      : _modelController.text.trim(),
-                  burrType: _type == 'grinder' &&
+                  brand: brand.isEmpty ? null : brand,
+                  model: model.isEmpty ? null : model,
+                  burrType:
+                      _type == 'grinder' &&
                           _burrController.text.trim().isNotEmpty
                       ? _burrController.text.trim()
                       : null,
                 ),
               );
             },
-            child: const Text('Done'),
           ),
         ],
       ),

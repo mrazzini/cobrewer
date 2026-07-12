@@ -61,9 +61,9 @@ void main() {
     await pumpApp(tester, fakeApi());
     await tester.pumpAndSettle();
 
-    expect(find.text('Worka Chelbesa'), findsOneWidget);
-    expect(find.text('Finca El Paraiso'), findsOneWidget);
-    expect(find.text('2 beans'), findsOneWidget);
+    expect(find.text('WORKA CHELBESA'), findsOneWidget);
+    expect(find.text('FINCA EL PARAISO'), findsOneWidget);
+    expect(find.text('SHOWING 2 OF 2'), findsOneWidget);
   });
 
   testWidgets('tapping a bean opens dial-in; recipe prefills the log form',
@@ -72,18 +72,18 @@ void main() {
     await pumpApp(tester, fakeApi(sink: requests));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Worka Chelbesa'));
+    await tester.tap(find.text('WORKA CHELBESA'));
     await tester.pumpAndSettle();
 
     // Dial-in flow shows the carried-over bean and equipment pickers.
-    expect(find.text('1 · Bean'), findsOneWidget);
-    expect(find.text('Worka Chelbesa'), findsOneWidget);
+    expect(find.text('1 · BEAN'), findsOneWidget);
+    expect(find.text('WORKA CHELBESA'), findsOneWidget);
 
-    await tester.tap(find.text('Get recipe'));
+    await tester.tap(find.text('GET RECIPE'));
     await tester.pumpAndSettle();
 
     // Recipe stats from the fixture recommendation.
-    expect(find.text('3 · Recipe'), findsOneWidget);
+    expect(find.text('3 · RECIPE'), findsOneWidget);
     expect(find.text('1:16'), findsOneWidget);
     expect(find.text('3:00–3:30'), findsOneWidget);
     expect(find.textContaining('Confidence 95%'), findsOneWidget);
@@ -96,6 +96,8 @@ void main() {
         requests.lastWhere((r) => r.url.path == '/api/v1/recommendations');
     expect(recReq.url.queryParameters['bean_id'], beanJson['id']);
     expect(recReq.url.queryParameters['brewer'], 'v60');
+    // The grinder saved in the profile (1Zpresso JX-Pro) was preselected.
+    expect(recReq.url.queryParameters['grinder'], '1zpresso_jx_pro');
   });
 
   testWidgets('logging a brew posts generated_by=rules and jumps to journal',
@@ -104,17 +106,21 @@ void main() {
     await pumpApp(tester, fakeApi(sink: requests));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Worka Chelbesa'));
+    await tester.tap(find.text('WORKA CHELBESA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Get recipe'));
+    await tester.tap(find.text('GET RECIPE'));
     await tester.pumpAndSettle();
 
     await tester.dragUntilVisible(
-      find.text('Log brew'),
+      find.text('LOG BREW'),
       find.byType(ListView),
       const Offset(0, -200),
     );
-    await tester.tap(find.text('Log brew'));
+    // The System B layout is taller — pull the button clear of the bottom
+    // edge so the tap lands inside the viewport.
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('LOG BREW'));
     await tester.pumpAndSettle();
 
     final post = requests.lastWhere(
@@ -124,9 +130,80 @@ void main() {
     expect(sent['bean_id'], beanJson['id']);
     expect(sent['dose_g'], 15.0);
 
-    // Navigated to the journal tab, which lists the brew.
-    expect(find.text('Journal'), findsWidgets);
+    // Navigated to the journal tab, which lists the brew with its embedded
+    // bean summary — no per-bean fetches.
+    expect(find.text('JOURNAL'), findsWidgets);
     expect(find.textContaining('Juicy'), findsOneWidget);
+    expect(find.text('WORKA CHELBESA'), findsOneWidget);
+    expect(
+      requests.where((r) => r.url.path.startsWith('/api/v1/beans/')),
+      isEmpty,
+    );
+  });
+
+  testWidgets('edited values log with a comma decimal and generated_by=manual',
+      (tester) async {
+    final requests = <http.Request>[];
+    await pumpApp(tester, fakeApi(sink: requests));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('WORKA CHELBESA'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('GET RECIPE'));
+    await tester.pumpAndSettle();
+
+    // Tweak the prefilled dose using a European decimal comma.
+    await tester.enterText(find.widgetWithText(TextField, '15.0'), '15,5');
+    await tester.dragUntilVisible(
+      find.text('LOG BREW'),
+      find.byType(ListView),
+      const Offset(0, -200),
+    );
+    // The System B layout is taller — pull the button clear of the bottom
+    // edge so the tap lands inside the viewport.
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('LOG BREW'));
+    await tester.pumpAndSettle();
+
+    final post = requests.lastWhere(
+        (r) => r.url.path == '/api/v1/brews' && r.method == 'POST');
+    final sent = jsonDecode(post.body) as Map<String, dynamic>;
+    expect(sent['dose_g'], 15.5);
+    // The log no longer matches the recipe, so it's labelled manual.
+    expect(sent['generated_by'], 'manual');
+  });
+
+  testWidgets('absurd values are rejected before any request is sent',
+      (tester) async {
+    final requests = <http.Request>[];
+    await pumpApp(tester, fakeApi(sink: requests));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('WORKA CHELBESA'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('GET RECIPE'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextField, '95.5'), '250');
+    await tester.dragUntilVisible(
+      find.text('LOG BREW'),
+      find.byType(ListView),
+      const Offset(0, -200),
+    );
+    // The System B layout is taller — pull the button clear of the bottom
+    // edge so the tap lands inside the viewport.
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('LOG BREW'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Water temp must be between'), findsOneWidget);
+    expect(
+      requests.where(
+          (r) => r.url.path == '/api/v1/brews' && r.method == 'POST'),
+      isEmpty,
+    );
   });
 
   testWidgets('profile shows identity, credits, and equipment',
@@ -134,11 +211,11 @@ void main() {
     await pumpApp(tester, fakeApi());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Profile'));
+    await tester.tap(find.text('PROFILE'));
     await tester.pumpAndSettle();
 
-    expect(find.text('dev_mobile'), findsOneWidget);
-    expect(find.textContaining('2 of 3 left'), findsOneWidget);
+    expect(find.text('DEV_MOBILE'), findsOneWidget);
+    expect(find.textContaining('2 OF 3 LEFT'), findsOneWidget);
     expect(find.text('1Zpresso JX-Pro'), findsOneWidget);
   });
 }

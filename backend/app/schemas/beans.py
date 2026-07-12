@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class BeanQuery(BaseModel):
@@ -12,16 +12,16 @@ class BeanQuery(BaseModel):
 
 
 class BeanCreate(BaseModel):
-    name: str
-    roaster: str | None = None
-    origin: str | None = None
-    variety: str | None = None
-    process: str | None = None
-    roast_level: str | None = None
+    name: str = Field(min_length=1, max_length=255)
+    roaster: str | None = Field(default=None, max_length=255)
+    origin: str | None = Field(default=None, max_length=255)
+    variety: str | None = Field(default=None, max_length=255)
+    process: str | None = Field(default=None, max_length=50)
+    roast_level: str | None = Field(default=None, max_length=50)
     roast_date: datetime | None = None
     tasting_notes: list[str] | None = None
-    cupping_score: float | None = None
-    source_url: str | None = None
+    cupping_score: float | None = Field(default=None, ge=0, le=100)
+    source_url: str | None = Field(default=None, max_length=1000)
 
 
 class BeanOut(BaseModel):

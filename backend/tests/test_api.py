@@ -130,6 +130,9 @@ async def test_brew_log_flow(client):
     logs = resp.json()["data"]
     assert len(logs) == 1
     assert logs[0]["rating"] == 4
+    # Bean summary is embedded so clients don't need one fetch per bean.
+    assert logs[0]["bean"]["name"] == "Chelbesa Lot 5"
+    assert logs[0]["bean"]["roaster"] == "The Barn"
 
     # Another user sees their own (empty) history, not the tester's.
     resp = await client.get("/api/v1/brews", headers={"X-Dev-User": "someone_else"})
@@ -143,6 +146,40 @@ async def test_brew_rating_validation(client):
     )
     assert resp.status_code == 422
     assert resp.json()["error"] == "Validation error"
+
+
+async def test_brew_parameter_bounds(client):
+    bean = (await client.post("/api/v1/beans", json=BEAN_PAYLOAD, headers=DEV)).json()["data"]
+    absurd = [
+        ("grind_setting", -50),
+        ("dose_g", 100_000),
+        ("yield_g", 0),
+        ("water_temp_c", 250),
+        ("brew_time_seconds", 0),
+        ("tds", 50),
+        ("generated_by", "llm"),
+    ]
+    for field, value in absurd:
+        resp = await client.post(
+            "/api/v1/brews",
+            json={"bean_id": bean["id"], "brewer": "v60", field: value},
+            headers=DEV,
+        )
+        assert resp.status_code == 422, f"{field}={value} was accepted"
+        assert resp.json()["error"] == "Validation error"
+
+
+async def test_search_is_accent_insensitive(client):
+    await client.post(
+        "/api/v1/beans",
+        json={**BEAN_PAYLOAD, "name": "Atitlán Reserva", "origin": "Guatemala, Atitlán"},
+        headers=DEV,
+    )
+    resp = await client.get("/api/v1/beans", params={"search": "atitlan"})
+    assert len(resp.json()["data"]) == 1
+
+    resp = await client.get("/api/v1/beans", params={"origin": "atitlan"})
+    assert len(resp.json()["data"]) == 1
 
 
 async def test_users_me_and_equipment(client):

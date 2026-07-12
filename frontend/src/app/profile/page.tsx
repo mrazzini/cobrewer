@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Equipment, UserProfile } from "@/lib/types";
 
-const inputClass =
-  "rounded-md border border-transparent bg-peri-well px-3 py-2 text-sm text-cream placeholder:text-cream-dim/70 focus:border-cream/60 focus:outline-none";
+const inputClass = "brut-input";
 
 const EMPTY_ROW: Equipment = { equipment_type: "grinder", brand: "", model: "", burr_type: "" };
 
@@ -56,36 +55,33 @@ export default function ProfilePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-6 py-10">
-      <h1 className="font-display mb-1 text-3xl tracking-tight">Profile &amp; Equipment</h1>
-      <p className="mb-8 text-cream-dim">
+      <h1 className="poster poster-shadow mb-1 text-4xl">Profile &amp; Equipment</h1>
+      <p className="mb-8 font-medium text-cream-dim">
         Your gear feeds the recommendation engine — grind settings come back converted to your
         grinder.
       </p>
 
       {error && (
-        <p className="mb-6 rounded-md bg-blush/20 p-4 text-cream">
+        <p className="mb-6 rounded-2xl border-[3px] border-ink bg-blush p-4 font-semibold text-ink shadow-[4px_4px_0_var(--color-ink)]">
           {error}
         </p>
       )}
 
       {profile && (
-        <section className="mb-6 rounded-xl bg-peri-deep/70 p-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
-            AI extraction credits
-          </h2>
-          <p className="text-sm text-cream">
-            <span className="font-semibold text-blush">
-              {profile.ai_credits.extractions_limit - profile.ai_credits.extractions_used}
+        <section className="brut-card mb-6 p-5">
+          <h2 className="poster mb-3 text-[15px] tracking-wide">AI extraction credits</h2>
+          <p className="text-sm font-medium text-ink-soft">
+            <span className="brut-chip mr-1 bg-olive">
+              {profile.ai_credits.extractions_limit - profile.ai_credits.extractions_used} of{" "}
+              {profile.ai_credits.extractions_limit} left
             </span>{" "}
-            of {profile.ai_credits.extractions_limit} free bag-photo extractions remaining
+            free bag-photo extractions remaining
           </p>
         </section>
       )}
 
-      <section className="rounded-xl bg-peri-deep/70 p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-cream-dim/80">
-          Equipment
-        </h2>
+      <section className="brut-card p-5">
+        <h2 className="poster mb-4 text-[15px] tracking-wide">Equipment</h2>
         <div className="space-y-3">
           {equipment.map((row, i) => (
             <div key={i} className="flex flex-wrap items-center gap-2">
@@ -125,9 +121,12 @@ export default function ProfilePage() {
               <button
                 onClick={() => setEquipment((rows) => rows.filter((_, j) => j !== i))}
                 aria-label="Remove"
-                className="px-2 text-cream-dim/60 hover:text-blush"
+                className="px-2 text-ink-soft hover:text-blush-deep"
               >
-                ✕
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden>
+                  <line x1="5" y1="5" x2="19" y2="19" />
+                  <line x1="19" y1="5" x2="5" y2="19" />
+                </svg>
               </button>
             </div>
           ))}
@@ -135,18 +134,14 @@ export default function ProfilePage() {
         <div className="mt-4 flex items-center gap-3">
           <button
             onClick={() => setEquipment((rows) => [...rows, { ...EMPTY_ROW }])}
-            className="rounded-md border border-cream/40 px-4 py-2 text-sm text-cream transition-colors hover:border-cream hover:bg-cream/10"
+            className="brut-btn brut-btn-ghost px-4 py-2"
           >
-            + Add equipment
+            Add equipment
           </button>
-          <button
-            onClick={save}
-            disabled={saving}
-            className="rounded-md bg-blush px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-blush-deep disabled:opacity-40"
-          >
+          <button onClick={save} disabled={saving} className="brut-btn px-6 py-2">
             {saving ? "Saving…" : "Save"}
           </button>
-          {saved && <span className="text-sm font-semibold text-blush">Saved ✓</span>}
+          {saved && <span className="brut-label text-ink">Saved</span>}
         </div>
       </section>
     </main>

@@ -20,10 +20,28 @@ export interface Bean {
   created_at: string;
 }
 
+export interface BeanSummary {
+  id: string;
+  name: string;
+  roaster: string | null;
+  origin: string | null;
+}
+
+export interface ExtractionResult {
+  name: string | null;
+  roaster: string | null;
+  origin: string | null;
+  variety: string | null;
+  process: string | null;
+  roast_level: string | null;
+  tasting_notes: string[] | null;
+}
+
 export interface BrewLog {
   id: string;
   user_id: string;
   bean_id: string;
+  bean: BeanSummary | null;
   brewer: string;
   grinder: string | null;
   grind_setting: number | null;

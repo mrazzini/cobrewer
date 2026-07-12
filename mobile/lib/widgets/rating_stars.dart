@@ -23,14 +23,18 @@ class RatingStars extends StatelessWidget {
         final star = Icon(
           filled ? Icons.star_rounded : Icons.star_outline_rounded,
           size: size,
-          color: filled ? Palette.blush : Palette.creamDim,
+          color: filled ? Palette.blushDeep : Palette.ink.withValues(alpha: 0.35),
         );
         if (onChanged == null) return star;
         return IconButton(
           onPressed: () => onChanged!(i + 1),
           icon: star,
           padding: EdgeInsets.zero,
-          constraints: BoxConstraints(minWidth: size + 8, minHeight: size + 8),
+          // 44pt minimum touch target even when the glyph is smaller.
+          constraints: BoxConstraints(
+            minWidth: size + 8 < 44 ? 44 : size + 8,
+            minHeight: size + 8 < 44 ? 44 : size + 8,
+          ),
           tooltip: '${i + 1} star${i == 0 ? '' : 's'}',
         );
       }),

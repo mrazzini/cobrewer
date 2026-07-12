@@ -1,0 +1,318 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Rubik:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&family=Recursive:CASL,wght@1,400;1,600;1,700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --peri: #7185BF; --cream: #F7F4ED; --blush: #ED99A4; --olive: #B5B77A; --ink: #14162B;
+  }
+  body {
+    background: #4d5b8c; padding: 26px; width: 936px;
+    font-family: 'Rubik', sans-serif; color: var(--ink);
+    display: grid; grid-template-columns: 420px 420px; gap: 34px 44px; justify-content: center;
+  }
+  .cell .cap {
+    font-family: 'Anton', sans-serif; color: var(--cream); letter-spacing: 1px;
+    font-size: 15px; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .phone {
+    width: 420px; height: 900px; overflow: hidden; position: relative;
+    background: var(--peri); border-radius: 28px; outline: 3px solid var(--ink);
+  }
+  .wrap { padding: 24px 18px 0; }
+
+  h1 {
+    font-family: 'Anton', sans-serif; font-size: 38px; line-height: 1;
+    text-transform: uppercase; color: var(--cream); letter-spacing: .5px;
+    text-shadow: 4px 4px 0 var(--ink); margin-bottom: 8px;
+  }
+  h1 .pop { color: var(--blush); }
+  .subpill {
+    display: inline-block; background: var(--olive); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 14px;
+  }
+  .search {
+    display: flex; align-items: center; gap: 10px; background: var(--cream);
+    border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    border-radius: 16px; padding: 12px 15px; font-size: 15px;
+    font-weight: 500; color: #6b6f85; margin-bottom: 14px;
+  }
+  .chips { display: flex; gap: 9px; margin-bottom: 14px; }
+  .chip {
+    font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .5px;
+    padding: 8px 13px; background: var(--cream); border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink); border-radius: 999px;
+  }
+  .chip.on { background: var(--blush); }
+  .count { font-weight: 700; color: var(--cream); font-size: 12px; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 11px; }
+
+  .card {
+    background: var(--cream); border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink); border-radius: 18px;
+    padding: 15px 16px; margin-bottom: 16px;
+  }
+  .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .name { font-family: 'Anton', sans-serif; font-size: 21px; text-transform: uppercase; letter-spacing: .5px; line-height: 1.05; }
+  .score {
+    font-family: 'Anton', sans-serif; font-size: 14px; background: var(--olive);
+    color: var(--ink); border: 2px solid var(--ink); padding: 4px 8px; border-radius: 9px;
+  }
+  .roaster { font-size: 13.5px; font-weight: 600; margin: 5px 0 9px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    padding: 4px 9px; border: 2px solid var(--ink); background: #fff; border-radius: 999px;
+  }
+  .tag.hl { background: var(--blush); }
+  .tag.g { background: var(--olive); }
+  .btn {
+    display: block; text-align: center; font-family: 'Anton', sans-serif;
+    font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink);
+    background: var(--blush); border: 3px solid var(--ink); border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--ink); padding: 12px 0;
+  }
+  .btn.ghost { background: var(--cream); }
+
+  nav {
+    position: absolute; bottom: 14px; left: 16px; right: 16px;
+    display: flex; gap: 5px; background: var(--cream); border: 3px solid var(--ink);
+    border-radius: 999px; box-shadow: 5px 5px 0 var(--ink); padding: 7px;
+  }
+  .nav-item {
+    flex: 1; text-align: center; font-weight: 700; font-size: 11.5px;
+    text-transform: uppercase; letter-spacing: .5px; padding: 11px 0;
+    color: var(--ink); border-radius: 999px;
+  }
+  .nav-item.on { background: var(--ink); color: var(--olive); }
+
+  /* dial-in */
+  .step {
+    font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--cream); margin: 2px 0 8px;
+  }
+  .step b { color: var(--blush); }
+  .selrow { display: flex; gap: 10px; margin-bottom: 14px; }
+  .sel {
+    flex: 1; display: flex; justify-content: space-between; align-items: center;
+    background: var(--cream); border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    border-radius: 999px; padding: 9px 14px; font-weight: 700; font-size: 13px;
+  }
+  .caret { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid var(--ink); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-bottom: 11px; }
+  .stat {
+    background: #fff; border: 2.5px solid var(--ink); border-radius: 12px;
+    padding: 8px 6px 7px; text-align: center;
+  }
+  .stat .k { font-size: 9.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #6b6f85; }
+  .stat .v { font-family: 'Anton', sans-serif; font-size: 17px; margin-top: 2px; }
+  .stat .u { font-size: 10px; font-weight: 600; color: #6b6f85; }
+  .note { font-size: 13px; font-weight: 500; line-height: 1.45; background: #fff; border: 2.5px dashed var(--ink); border-radius: 12px; padding: 9px 11px; margin-bottom: 12px; }
+  .conf {
+    display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+    background: var(--olive); border: 2px solid var(--ink); border-radius: 999px; padding: 3px 10px; margin-bottom: 10px;
+  }
+
+  .stars { display: inline-flex; gap: 3px; }
+  .stars svg { display: block; }
+
+  /* journal */
+  .meta { font-size: 12.5px; font-weight: 600; color: #4d5170; display: flex; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 8px; }
+  .quote { font-size: 13.5px; font-weight: 500; font-style: italic; }
+  .src { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #6b6f85; }
+  .date { font-size: 12px; font-weight: 600; color: #6b6f85; }
+
+  /* profile */
+  .avatar {
+    width: 54px; height: 54px; border-radius: 999px; background: var(--blush);
+    border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center;
+    font-family: 'Anton', sans-serif; font-size: 22px;
+  }
+  .pips { display: flex; gap: 7px; margin-top: 9px; }
+  .pip { width: 34px; height: 12px; border: 2.5px solid var(--ink); border-radius: 999px; background: var(--olive); }
+  .pip.used { background: #fff; }
+  .eqrow { display: flex; justify-content: space-between; align-items: center; }
+  .eqtype { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; background: var(--peri); color: var(--cream); border: 2px solid var(--ink); border-radius: 999px; padding: 3px 9px; }
+</style>
+</head>
+<body>
+  <!-- ==================== EXPLORE ==================== -->
+  <div class="cell"><p class="cap">Explore</p>
+  <div class="phone"><div class="wrap">
+    <h1>Explore <span class="pop">beans</span></h1>
+    <span class="subpill">200 coffees. zero bad cups.</span>
+    <div class="search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b6f85" stroke-width="3" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg> Search beans, roasters, origins…</div>
+    <div class="chips"><span class="chip on">Origin</span><span class="chip">Process</span><span class="chip">Roast</span></div>
+    <p class="count">Showing 3 of 200</p>
+    <div class="card">
+      <div class="row"><span class="name">Worka Chelbesa</span><span class="score">88.25</span></div>
+      <p class="roaster">September Coffee Co · Ethiopia</p>
+      <div class="tags"><span class="tag hl">Light</span><span class="tag g">Washed</span><span class="tag">Bergamot</span><span class="tag">Peach</span></div>
+      <span class="btn">Dial this in</span>
+    </div>
+    <div class="card">
+      <div class="row"><span class="name">Finca El Paraiso</span><span class="score">89.50</span></div>
+      <p class="roaster">Onyx Coffee Lab · Colombia</p>
+      <div class="tags"><span class="tag hl">Med-Light</span><span class="tag g">Anaerobic</span><span class="tag">Lychee</span><span class="tag">Cola</span></div>
+      <span class="btn">Dial this in</span>
+    </div>
+    <div class="card">
+      <div class="row"><span class="name">Amazonas</span><span class="score">85.50</span></div>
+      <p class="roaster">The Barn · Peru</p>
+      <div class="tags"><span class="tag hl">Light</span><span class="tag g">Natural</span><span class="tag">Walnut</span></div>
+    </div>
+  </div>
+  <nav><span class="nav-item on">Explore</span><span class="nav-item">Dial-in</span><span class="nav-item">Journal</span><span class="nav-item">Profile</span></nav>
+  </div></div>
+
+  <!-- ==================== DIAL-IN ==================== -->
+  <div class="cell"><p class="cap">Dial-in</p>
+  <div class="phone"><div class="wrap">
+    <h1>Dial <span class="pop">it in</span></h1>
+    <span class="subpill">Recipe tuned to your gear</span>
+
+    <p class="step"><b>1</b> · Bean</p>
+    <div class="card" style="margin-bottom:13px; padding:12px 16px;">
+      <div class="row"><span class="name" style="font-size:17px;">Worka Chelbesa</span><span class="tag hl" style="margin-top:2px;">Light</span></div>
+      <p class="roaster" style="margin:3px 0 0;">September Coffee Co · Ethiopia · washed</p>
+    </div>
+
+    <p class="step"><b>2</b> · Equipment</p>
+    <div class="selrow">
+      <span class="sel">V60 <span class="caret"></span></span>
+      <span class="sel">1Zpresso JX-Pro <span class="caret"></span></span>
+    </div>
+
+    <p class="step"><b>3</b> · Recipe</p>
+    <div class="card" style="padding:14px 15px;">
+      <span class="conf">Rules engine · 95% confident</span>
+      <div class="stats">
+        <div class="stat"><div class="k">Grind</div><div class="v">66</div><div class="u">clicks</div></div>
+        <div class="stat"><div class="k">Dose</div><div class="v">15</div><div class="u">grams</div></div>
+        <div class="stat"><div class="k">Ratio</div><div class="v">1:16</div><div class="u">240 g out</div></div>
+        <div class="stat"><div class="k">Water</div><div class="v">94°</div><div class="u">celsius</div></div>
+        <div class="stat"><div class="k">Time</div><div class="v">3:00</div><div class="u">to 3:30</div></div>
+        <div class="stat"><div class="k">Pressure</div><div class="v">—</div><div class="u">pour over</div></div>
+      </div>
+      <p class="note">Light roast: raise the temperature and grind finer. Setting converted from 22 C40 clicks for the JX-Pro.</p>
+      <div class="row" style="align-items:center; margin-bottom:12px;">
+        <span style="font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.5px;">Rate it</span>
+        <span class="stars">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8f93ab" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+        </span>
+      </div>
+      <span class="btn">Log this brew</span>
+    </div>
+  </div>
+  <nav><span class="nav-item">Explore</span><span class="nav-item on">Dial-in</span><span class="nav-item">Journal</span><span class="nav-item">Profile</span></nav>
+  </div></div>
+
+  <!-- ==================== JOURNAL ==================== -->
+  <div class="cell"><p class="cap">Journal</p>
+  <div class="phone"><div class="wrap">
+    <h1>Brew <span class="pop">journal</span></h1>
+    <span class="subpill">12 brews · getting smarter</span>
+    <div class="card">
+      <div class="row">
+        <div><span class="name" style="font-size:18px;">Worka Chelbesa</span>
+        <p class="roaster" style="margin:3px 0 8px;">September Coffee Co · V60</p></div>
+        <span class="date">Jul 11</span>
+      </div>
+      <div class="meta"><span>15 g in · 240 g out</span><span>grind 66</span><span>93°C</span><span>3:15</span></div>
+      <div class="row" style="align-items:center;">
+        <span class="stars">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8f93ab" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+        </span>
+        <span class="src">from recipe</span>
+      </div>
+      <p class="quote" style="margin-top:8px;">"Juicy, slightly astringent finish — try 1 click coarser."</p>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div><span class="name" style="font-size:18px;">Finca El Paraiso</span>
+        <p class="roaster" style="margin:3px 0 8px;">Onyx Coffee Lab · Espresso</p></div>
+        <span class="date">Jul 9</span>
+      </div>
+      <div class="meta"><span>18 g in · 45 g out</span><span>grind 14</span><span>93°C</span><span>0:28</span></div>
+      <div class="row" style="align-items:center;">
+        <span class="stars">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ED99A4" stroke="#14162B" stroke-width="1.6"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+        </span>
+        <span class="src">logged manually</span>
+      </div>
+      <p class="quote" style="margin-top:8px;">"Best cup this month — a lychee bomb."</p>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div class="row">
+        <div><span class="name" style="font-size:18px;">Amazonas</span>
+        <p class="roaster" style="margin:3px 0 0;">The Barn · French Press</p></div>
+        <span class="date">Jul 7</span>
+      </div>
+    </div>
+  </div>
+  <nav><span class="nav-item">Explore</span><span class="nav-item">Dial-in</span><span class="nav-item on">Journal</span><span class="nav-item">Profile</span></nav>
+  </div></div>
+
+  <!-- ==================== PROFILE ==================== -->
+  <div class="cell"><p class="cap">Profile</p>
+  <div class="phone"><div class="wrap">
+    <h1>Your <span class="pop">setup</span></h1>
+    <span class="subpill">Gear in, better cups out</span>
+    <div class="card">
+      <div style="display:flex; gap:14px; align-items:center;">
+        <span class="avatar">M</span>
+        <div>
+          <span class="name" style="font-size:19px;">Marco</span>
+          <p class="roaster" style="margin:2px 0 0;">Brewing since July 2026</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <span class="name" style="font-size:16px;">AI bag scans</span>
+        <span class="tag g">2 of 3 left</span>
+      </div>
+      <div class="pips"><span class="pip used"></span><span class="pip"></span><span class="pip"></span></div>
+      <p class="roaster" style="margin:9px 0 0;">Snap a bag photo to add a bean automatically.</p>
+    </div>
+    <p class="step"><b>·</b> Equipment</p>
+    <div class="card" style="margin-bottom:12px; padding:13px 16px;">
+      <div class="eqrow">
+        <div>
+          <span class="name" style="font-size:16px;">1Zpresso JX-Pro</span>
+          <p class="roaster" style="margin:2px 0 0;">conical burr</p>
+        </div>
+        <span class="eqtype">Grinder</span>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px; padding:13px 16px;">
+      <div class="eqrow">
+        <div>
+          <span class="name" style="font-size:16px;">Hario V60 02</span>
+          <p class="roaster" style="margin:2px 0 0;">plastic dripper</p>
+        </div>
+        <span class="eqtype">Brewer</span>
+      </div>
+    </div>
+    <span class="btn ghost" style="margin-bottom:12px;">Add equipment</span>
+    <span class="btn">Save equipment</span>
+  </div>
+  <nav><span class="nav-item">Explore</span><span class="nav-item">Dial-in</span><span class="nav-item">Journal</span><span class="nav-item on">Profile</span></nav>
+  </div></div>
+</body>
+</html>
