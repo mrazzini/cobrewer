@@ -5,8 +5,10 @@ cobrewer is a specialty coffee brewing co-pilot that helps users dial in their b
 
 ## Brand
 - Name: Cobrewer
-- Theme: Retro, flat, playful — full-bleed color blocks, bold uppercase headings, no borders or gradients
-- Colors (two-color palette): periwinkle #7185BF canvas (#6377B1 cards, #57699F wells), blush pink #ED99A4 as the single accent (buttons, stars, active states, the recipe card); cream #F7F4ED text on periwinkle, ink #333A63 text on pink
+- Theme: Rounded neubrutalism ("System B", see design/DESIGN.md) — periwinkle canvas, cream cards with 3px ink borders and hard offset shadows (zero blur), pill chips, poster-style uppercase display type
+- Colors: periwinkle #7185BF canvas, cream #F7F4ED surfaces, blush #ED99A4 primary accent (buttons, active states, roast tags), olive #B5B77A secondary accent (score badges, process tags, banners), ink #14162B text/borders/shadows, white for neutral chips
+- Type: Anton for display (uppercase, ink text-shadow on canvas), Rubik 400–800 for body
+- No text symbols or emoji as UI (no →/★/⌕ glyphs) — drawn SVG/vector icons only
 - Tone: knowledgeable coffee friend, not corporate
 
 ## Tech Stack
