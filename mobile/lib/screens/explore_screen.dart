@@ -106,6 +106,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -252,7 +253,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       color: Palette.blush,
       onRefresh: () => _fetch(silent: true),
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
         itemCount: _beans.length + 1 + (hasMore ? 1 : 0),
         separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, i) {

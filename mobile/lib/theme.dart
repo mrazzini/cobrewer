@@ -69,6 +69,34 @@ class BrutCard extends StatelessWidget {
   }
 }
 
+/// The periwinkle canvas with thin cream pinstripes — the app's background
+/// texture. Painted once by the shell; screens use transparent scaffolds.
+class StripedCanvas extends StatelessWidget {
+  const StripedCanvas({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(painter: _StripesPainter(), size: Size.infinite);
+  }
+}
+
+class _StripesPainter extends CustomPainter {
+  static const _spacing = 28.0;
+  static const _width = 2.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = Palette.peri);
+    final stripe = Paint()..color = Palette.cream.withValues(alpha: 0.06);
+    for (var x = 0.0; x < size.width; x += _spacing) {
+      canvas.drawRect(Rect.fromLTWH(x, 0, _width, size.height), stripe);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StripesPainter oldDelegate) => false;
+}
+
 /// Zero-blur drop shadow around an input/select that draws its own border.
 Widget brutShadow({required Widget child, double radius = 12, double shadow = 3}) {
   return Container(

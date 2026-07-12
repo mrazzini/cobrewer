@@ -60,6 +60,7 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -112,7 +113,7 @@ class _JournalScreenState extends State<JournalScreen> {
       color: Palette.blush,
       onRefresh: () => _fetch(silent: true),
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
         itemCount: _brews.length,
         separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, i) => KeyedSubtree(

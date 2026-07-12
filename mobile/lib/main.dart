@@ -71,49 +71,61 @@ class _HomeShellState extends State<HomeShell> {
       ProfileScreen(api: widget.api),
     ];
 
+    // The nav pill floats in a Stack so list content scrolls underneath it
+    // (screens pad their scrollables by ~100px at the bottom).
     return Scaffold(
-      body: IndexedStack(index: _tab, children: pages),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: brutBox(radius: 999, shadow: 5),
-          child: Row(
-            children: [
-              for (final (i, label) in const [
-                (0, 'EXPLORE'),
-                (1, 'DIAL-IN'),
-                (2, 'JOURNAL'),
-                (3, 'PROFILE'),
-              ])
-                Expanded(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => setState(() => _tab = i),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: _tab == i
-                          ? BoxDecoration(
-                              color: Palette.ink,
-                              borderRadius: BorderRadius.circular(999),
-                            )
-                          : null,
-                      child: Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                          color: _tab == i ? Palette.olive : Palette.ink,
+      body: Stack(
+        children: [
+          const Positioned.fill(child: StripedCanvas()),
+          Positioned.fill(child: IndexedStack(index: _tab, children: pages)),
+          Positioned(
+            left: 14,
+            right: 14,
+            bottom: 0,
+            child: SafeArea(
+              minimum: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: brutBox(radius: 999, shadow: 5),
+                child: Row(
+                  children: [
+                    for (final (i, label) in const [
+                      (0, 'EXPLORE'),
+                      (1, 'DIAL-IN'),
+                      (2, 'JOURNAL'),
+                      (3, 'PROFILE'),
+                    ])
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => setState(() => _tab = i),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: _tab == i
+                                ? BoxDecoration(
+                                    color: Palette.ink,
+                                    borderRadius: BorderRadius.circular(999),
+                                  )
+                                : null,
+                            child: Text(
+                              label,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                                color: _tab == i ? Palette.olive : Palette.ink,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
-            ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

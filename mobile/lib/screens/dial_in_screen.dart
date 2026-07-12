@@ -244,6 +244,7 @@ class _DialInScreenState extends State<DialInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -319,7 +320,7 @@ class _DialInScreenState extends State<DialInScreen> {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
       itemCount: _beanResults.length,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
@@ -337,7 +338,7 @@ class _DialInScreenState extends State<DialInScreen> {
   Widget _dialInFlow() {
     final bean = _bean!;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
       children: [
         _sectionTitle('1 · Bean'),
         BeanCard(bean: bean, compact: true),

@@ -88,6 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -123,7 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     final profile = _profile!;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
       children: [
         BrutCard(
           padding: EdgeInsets.zero,
