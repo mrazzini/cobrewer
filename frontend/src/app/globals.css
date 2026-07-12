@@ -21,13 +21,7 @@
 }
 
 body {
-  /* Periwinkle canvas with thin cream pinstripes (design/DESIGN.md). */
-  background-color: var(--color-peri);
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgb(247 244 237 / 0.06) 0 2px,
-    transparent 2px 28px
-  );
+  background: var(--color-peri);
   color: var(--color-cream);
   font-family: var(--font-sans);
 }

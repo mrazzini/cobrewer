@@ -81,16 +81,11 @@ class StripedCanvas extends StatelessWidget {
 }
 
 class _StripesPainter extends CustomPainter {
-  static const _spacing = 28.0;
-  static const _width = 2.0;
-
   @override
   void paint(Canvas canvas, Size size) {
+    // Plain periwinkle for now — a stripe texture is being mocked up
+    // separately before it ships (see design/DESIGN.md).
     canvas.drawRect(Offset.zero & size, Paint()..color = Palette.peri);
-    final stripe = Paint()..color = Palette.cream.withValues(alpha: 0.06);
-    for (var x = 0.0; x < size.width; x += _spacing) {
-      canvas.drawRect(Rect.fromLTWH(x, 0, _width, size.height), stripe);
-    }
   }
 
   @override

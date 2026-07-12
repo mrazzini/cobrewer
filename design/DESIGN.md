@@ -28,8 +28,9 @@ System C, is parked below for the record.
 - Hard offset shadows, zero blur: 6px 6px for cards, 3–4px for chips/buttons.
 - Radii: cards 18–20px, buttons 14px, chips/pills/nav fully rounded (999px).
 - Flat color only. No gradients, no soft shadows, no blur.
-- Canvas texture: thin vertical cream pinstripes on the periwinkle
-  background (2px wide, 28px apart, ~6% opacity) on both web and mobile.
+- Canvas texture: under review — stripe variants are being mocked up
+  before one ships. The mobile canvas painter and web body rule are the
+  two places a chosen texture plugs into.
 - The mobile nav pill genuinely floats: content scrolls underneath it
   (scrollables reserve ~104px of bottom padding).
 
