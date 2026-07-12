@@ -245,8 +245,7 @@ class _DialInScreenState extends State<DialInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text('Dial-in', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text('DIAL IT IN'),
       ),
       body: _bean == null ? _beanPicker() : _dialInFlow(),
     );
@@ -260,9 +259,11 @@ class _DialInScreenState extends State<DialInScreen> {
           child: TextField(
             controller: _beanSearchController,
             onChanged: _onBeanSearchChanged,
+            style: const TextStyle(
+                color: Palette.ink, fontWeight: FontWeight.w500),
             decoration: const InputDecoration(
               hintText: 'Pick a bean to dial in…',
-              prefixIcon: Icon(Icons.search, color: Palette.creamDim),
+              prefixIcon: Icon(Icons.search, color: Palette.inkSoft),
             ),
           ),
         ),
@@ -336,14 +337,22 @@ class _DialInScreenState extends State<DialInScreen> {
               _searchBeans(_beanSearchController.text);
             }),
             child: const Text('Change bean',
-                style: TextStyle(color: Palette.blush)),
+                style: TextStyle(
+                    color: Palette.cream,
+                    fontWeight: FontWeight.w700,
+                    decoration: TextDecoration.underline)),
           ),
         ),
         _sectionTitle('2 · Equipment'),
         DropdownButtonFormField<String>(
           value: _brewer,
           decoration: const InputDecoration(labelText: 'Brewer'),
-          dropdownColor: Palette.periWell,
+          style: const TextStyle(
+              color: Palette.ink,
+              fontFamily: 'Rubik',
+              fontWeight: FontWeight.w600,
+              fontSize: 15),
+          dropdownColor: Palette.cream,
           items: [
             for (final b in brewers)
               DropdownMenuItem(value: b.key, child: Text(b.label)),
@@ -357,7 +366,12 @@ class _DialInScreenState extends State<DialInScreen> {
         DropdownButtonFormField<String?>(
           value: _grinder,
           decoration: const InputDecoration(labelText: 'Grinder (optional)'),
-          dropdownColor: Palette.periWell,
+          style: const TextStyle(
+              color: Palette.ink,
+              fontFamily: 'Rubik',
+              fontWeight: FontWeight.w600,
+              fontSize: 15),
+          dropdownColor: Palette.cream,
           items: [
             const DropdownMenuItem<String?>(
                 value: null, child: Text('No grinder / other')),
@@ -372,7 +386,7 @@ class _DialInScreenState extends State<DialInScreen> {
         const SizedBox(height: 14),
         FilledButton(
           onPressed: _loadingRec ? null : _getRecipe,
-          child: Text(_loadingRec ? 'Computing…' : 'Get recipe'),
+          child: Text(_loadingRec ? 'COMPUTING…' : 'GET RECIPE'),
         ),
         if (_recError != null)
           Padding(
@@ -395,12 +409,13 @@ class _DialInScreenState extends State<DialInScreen> {
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 10),
       child: Text(
-        text,
+        text.toUpperCase(),
         style: const TextStyle(
-          color: Palette.blush,
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-          letterSpacing: 1.1,
+          fontFamily: 'Anton',
+          color: Palette.cream,
+          fontSize: 17,
+          letterSpacing: 1,
+          shadows: [Shadow(color: Palette.ink, offset: Offset(2, 2))],
         ),
       ),
     );
@@ -418,14 +433,9 @@ class _DialInScreenState extends State<DialInScreen> {
       ('Time', formatBrewTime(p.brewTimeMinSeconds, p.brewTimeMaxSeconds)),
       if (p.pressureBar != null) ('Pressure', '${p.pressureBar} bar'),
     ];
-    return Container(
-      decoration: BoxDecoration(
-        color: Palette.blush,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
+    return BrutCard(
+      color: Palette.blush,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
@@ -433,20 +443,30 @@ class _DialInScreenState extends State<DialInScreen> {
               runSpacing: 12,
               children: [
                 for (final (label, value) in stats)
-                  SizedBox(
-                    width: 96,
+                  Container(
+                    width: 100,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Palette.ink, width: 2.5),
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(label,
+                        Text(label.toUpperCase(),
                             style: const TextStyle(
-                                color: Palette.inkSoft, fontSize: 12)),
+                                color: Palette.inkSoft,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8)),
                         const SizedBox(height: 2),
                         Text(value,
                             style: const TextStyle(
+                                fontFamily: 'Anton',
                                 color: Palette.ink,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15)),
+                                fontSize: 16)),
                       ],
                     ),
                   ),
@@ -458,37 +478,34 @@ class _DialInScreenState extends State<DialInScreen> {
                 child: Text(
                   'Converted from ${p.grindSettingC40Clicks} C40 clicks for ${grinderLabel(p.grindSetting.grinder)}.',
                   style: const TextStyle(
-                      color: Palette.inkSoft, fontSize: 12),
+                      color: Palette.ink,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             for (final note in p.notes)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('•  ',
-                        style: TextStyle(color: Palette.ink)),
-                    Expanded(
-                      child: Text(note,
-                          style: const TextStyle(
-                              color: Palette.inkSoft, fontSize: 13)),
-                    ),
-                  ],
-                ),
+                child: Text(note,
+                    style: const TextStyle(
+                        color: Palette.ink,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500)),
               ),
             if (rec.confidenceScore != null)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Text(
                   'Confidence ${(rec.confidenceScore! * 100).round()}%',
-                  style:
-                      const TextStyle(color: Palette.inkSoft, fontSize: 12),
+                  style: const TextStyle(
+                      color: Palette.ink,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6),
                 ),
               ),
           ],
         ),
-      ),
     );
   }
 
@@ -522,13 +539,19 @@ class _DialInScreenState extends State<DialInScreen> {
         TextField(
           controller: _notesController,
           maxLines: 2,
+          style: const TextStyle(
+              color: Palette.ink, fontWeight: FontWeight.w500),
           decoration: const InputDecoration(labelText: 'Notes'),
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            const Text('Rating',
-                style: TextStyle(color: Palette.creamDim)),
+            const Text('RATING',
+                style: TextStyle(
+                    color: Palette.cream,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    fontSize: 12)),
             const SizedBox(width: 10),
             RatingStars(
               rating: _rating,
@@ -541,7 +564,7 @@ class _DialInScreenState extends State<DialInScreen> {
           width: double.infinity,
           child: FilledButton(
             onPressed: _logging ? null : _logBrew,
-            child: Text(_logging ? 'Logging…' : 'Log brew'),
+            child: Text(_logging ? 'LOGGING…' : 'LOG BREW'),
           ),
         ),
       ],
@@ -552,6 +575,7 @@ class _DialInScreenState extends State<DialInScreen> {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(color: Palette.ink, fontWeight: FontWeight.w500),
       decoration: InputDecoration(labelText: label),
     );
   }

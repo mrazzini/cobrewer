@@ -53,7 +53,7 @@ Widget _bar({required double width, double height = 12, double radius = 6}) {
     width: width,
     height: height,
     decoration: BoxDecoration(
-      color: Palette.periWell,
+      color: Palette.ink.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(radius),
     ),
   );
@@ -65,7 +65,8 @@ class BeanCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: brutBox(shadow: 4),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -97,7 +98,8 @@ class BrewCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: brutBox(shadow: 4),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(

@@ -61,12 +61,11 @@ class _JournalScreenState extends State<JournalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Journal',
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text('BREW JOURNAL'),
         actions: [
           IconButton(
             onPressed: () => _fetch(),
-            icon: const Icon(Icons.refresh, color: Palette.creamDim),
+            icon: const Icon(Icons.refresh, color: Palette.cream),
             tooltip: 'Refresh',
           ),
         ],
@@ -122,27 +121,26 @@ class _JournalScreenState extends State<JournalScreen> {
         '${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
     final params = <String>[
       if (brew.doseG != null && brew.yieldG != null)
-        '${brew.doseG}g → ${brew.yieldG}g',
+        '${brew.doseG}g in · ${brew.yieldG}g out',
       if (brew.grindSetting != null)
         'grind ${brew.grindSetting} (${grinderLabel(brew.grinder)})',
       if (brew.waterTempC != null) '${brew.waterTempC}°C',
       if (brew.brewTimeSeconds != null) formatSeconds(brew.brewTimeSeconds!),
     ];
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
+    return BrutCard(
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    bean?.name ?? 'Unknown bean',
+                    (bean?.name ?? 'Unknown bean').toUpperCase(),
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Anton',
                         fontSize: 15,
-                        color: Palette.cream),
+                        letterSpacing: 0.5,
+                        color: Palette.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -155,14 +153,19 @@ class _JournalScreenState extends State<JournalScreen> {
             Text(
               '${brewerLabel(brew.brewer)} · $date'
               '${brew.generatedBy == 'rules' ? ' · from recipe' : ''}',
-              style:
-                  const TextStyle(color: Palette.creamDim, fontSize: 13),
+              style: const TextStyle(
+                  color: Palette.inkSoft,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600),
             ),
             if (params.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
                 params.join(' · '),
-                style: const TextStyle(color: Palette.creamDim, fontSize: 13),
+                style: const TextStyle(
+                    color: Palette.inkSoft,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500),
               ),
             ],
             if (brew.notes?.isNotEmpty ?? false) ...[
@@ -170,14 +173,14 @@ class _JournalScreenState extends State<JournalScreen> {
               Text(
                 brew.notes!,
                 style: const TextStyle(
-                    color: Palette.cream,
+                    color: Palette.ink,
                     fontSize: 13,
+                    fontWeight: FontWeight.w500,
                     fontStyle: FontStyle.italic),
               ),
             ],
           ],
         ),
-      ),
     );
   }
 }

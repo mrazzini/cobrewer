@@ -61,8 +61,8 @@ void main() {
     await pumpApp(tester, fakeApi());
     await tester.pumpAndSettle();
 
-    expect(find.text('Worka Chelbesa'), findsOneWidget);
-    expect(find.text('Finca El Paraiso'), findsOneWidget);
+    expect(find.text('WORKA CHELBESA'), findsOneWidget);
+    expect(find.text('FINCA EL PARAISO'), findsOneWidget);
     expect(find.text('2 beans · showing 2'), findsOneWidget);
   });
 
@@ -72,18 +72,18 @@ void main() {
     await pumpApp(tester, fakeApi(sink: requests));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Worka Chelbesa'));
+    await tester.tap(find.text('WORKA CHELBESA'));
     await tester.pumpAndSettle();
 
     // Dial-in flow shows the carried-over bean and equipment pickers.
-    expect(find.text('1 · Bean'), findsOneWidget);
-    expect(find.text('Worka Chelbesa'), findsOneWidget);
+    expect(find.text('1 · BEAN'), findsOneWidget);
+    expect(find.text('WORKA CHELBESA'), findsOneWidget);
 
-    await tester.tap(find.text('Get recipe'));
+    await tester.tap(find.text('GET RECIPE'));
     await tester.pumpAndSettle();
 
     // Recipe stats from the fixture recommendation.
-    expect(find.text('3 · Recipe'), findsOneWidget);
+    expect(find.text('3 · RECIPE'), findsOneWidget);
     expect(find.text('1:16'), findsOneWidget);
     expect(find.text('3:00–3:30'), findsOneWidget);
     expect(find.textContaining('Confidence 95%'), findsOneWidget);
@@ -106,17 +106,21 @@ void main() {
     await pumpApp(tester, fakeApi(sink: requests));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Worka Chelbesa'));
+    await tester.tap(find.text('WORKA CHELBESA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Get recipe'));
+    await tester.tap(find.text('GET RECIPE'));
     await tester.pumpAndSettle();
 
     await tester.dragUntilVisible(
-      find.text('Log brew'),
+      find.text('LOG BREW'),
       find.byType(ListView),
       const Offset(0, -200),
     );
-    await tester.tap(find.text('Log brew'));
+    // The System B layout is taller — pull the button clear of the bottom
+    // edge so the tap lands inside the viewport.
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('LOG BREW'));
     await tester.pumpAndSettle();
 
     final post = requests.lastWhere(
@@ -130,7 +134,7 @@ void main() {
     // bean summary — no per-bean fetches.
     expect(find.text('Journal'), findsWidgets);
     expect(find.textContaining('Juicy'), findsOneWidget);
-    expect(find.text('Worka Chelbesa'), findsOneWidget);
+    expect(find.text('WORKA CHELBESA'), findsOneWidget);
     expect(
       requests.where((r) => r.url.path.startsWith('/api/v1/beans/')),
       isEmpty,
@@ -143,19 +147,23 @@ void main() {
     await pumpApp(tester, fakeApi(sink: requests));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Worka Chelbesa'));
+    await tester.tap(find.text('WORKA CHELBESA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Get recipe'));
+    await tester.tap(find.text('GET RECIPE'));
     await tester.pumpAndSettle();
 
     // Tweak the prefilled dose using a European decimal comma.
     await tester.enterText(find.widgetWithText(TextField, '15.0'), '15,5');
     await tester.dragUntilVisible(
-      find.text('Log brew'),
+      find.text('LOG BREW'),
       find.byType(ListView),
       const Offset(0, -200),
     );
-    await tester.tap(find.text('Log brew'));
+    // The System B layout is taller — pull the button clear of the bottom
+    // edge so the tap lands inside the viewport.
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('LOG BREW'));
     await tester.pumpAndSettle();
 
     final post = requests.lastWhere(
@@ -172,18 +180,22 @@ void main() {
     await pumpApp(tester, fakeApi(sink: requests));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Worka Chelbesa'));
+    await tester.tap(find.text('WORKA CHELBESA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Get recipe'));
+    await tester.tap(find.text('GET RECIPE'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.widgetWithText(TextField, '95.5'), '250');
     await tester.dragUntilVisible(
-      find.text('Log brew'),
+      find.text('LOG BREW'),
       find.byType(ListView),
       const Offset(0, -200),
     );
-    await tester.tap(find.text('Log brew'));
+    // The System B layout is taller — pull the button clear of the bottom
+    // edge so the tap lands inside the viewport.
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('LOG BREW'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Water temp must be between'), findsOneWidget);
@@ -202,7 +214,7 @@ void main() {
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
 
-    expect(find.text('dev_mobile'), findsOneWidget);
+    expect(find.text('DEV_MOBILE'), findsOneWidget);
     expect(find.textContaining('2 of 3 left'), findsOneWidget);
     expect(find.text('1Zpresso JX-Pro'), findsOneWidget);
   });

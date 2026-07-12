@@ -107,8 +107,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore beans',
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text('EXPLORE BEANS'),
       ),
       body: Column(
         children: [
@@ -117,14 +116,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
+              style: const TextStyle(
+                  color: Palette.ink, fontWeight: FontWeight.w500),
               decoration: InputDecoration(
                 hintText: 'Search beans, roasters, origins…',
-                prefixIcon: const Icon(Icons.search, color: Palette.creamDim),
+                prefixIcon: const Icon(Icons.search, color: Palette.inkSoft),
                 suffixIcon: _searchController.text.isEmpty
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close,
-                            size: 18, color: Palette.creamDim),
+                            size: 18, color: Palette.inkSoft),
                         tooltip: 'Clear search',
                         onPressed: () {
                           _searchController.clear();
@@ -189,7 +190,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ? label
         : '$label: ${options.firstWhere((o) => o.$1 == value, orElse: () => (value, value)).$2}';
     return PopupMenuButton<String?>(
-      color: Palette.periWell,
       onSelected: (v) => onChanged(v == '' ? null : v),
       itemBuilder: (context) => [
         const PopupMenuItem(value: '', child: Text('Any')),
@@ -202,12 +202,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(selectedLabel,
                 style: TextStyle(
-                  color: value == null ? Palette.creamDim : Palette.blush,
+                  color: value == null ? Palette.ink : Palette.blushDeep,
                   fontSize: 13,
                 )),
             Icon(Icons.arrow_drop_down,
                 size: 18,
-                color: value == null ? Palette.creamDim : Palette.blush),
+                color: value == null ? Palette.ink : Palette.blushDeep),
           ],
         ),
       ),
@@ -242,7 +242,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
           if (i == 0) {
             return Text(
               '$_total bean${_total == 1 ? '' : 's'} · showing ${_beans.length}',
-              style: const TextStyle(color: Palette.creamDim, fontSize: 13),
+              style: const TextStyle(
+                color: Palette.creamDim,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.4,
+              ),
             );
           }
           if (i == _beans.length + 1) {

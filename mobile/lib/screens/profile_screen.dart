@@ -70,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editEquipment({Equipment? existing, int? index}) async {
     final result = await showModalBottomSheet<Equipment>(
       context: context,
-      backgroundColor: Palette.periWell,
+      backgroundColor: Palette.cream,
       isScrollControlled: true,
       builder: (context) => _EquipmentSheet(existing: existing),
     );
@@ -89,8 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile',
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text('YOUR SETUP'),
       ),
       body: _body(),
     );
@@ -117,21 +116,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Card(
+        BrutCard(
+          padding: EdgeInsets.zero,
           child: ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Palette.blushDeep,
-              child: Icon(Icons.person, color: Palette.cream),
+            leading: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Palette.blush,
+                shape: BoxShape.circle,
+                border: Border.all(color: Palette.ink, width: 2.5),
+              ),
+              child: const Icon(Icons.person, color: Palette.ink),
             ),
             title: Text(
-              profile.displayName ?? profile.clerkId,
+              (profile.displayName ?? profile.clerkId).toUpperCase(),
               style: const TextStyle(
-                  color: Palette.cream, fontWeight: FontWeight.w600),
+                  fontFamily: 'Anton',
+                  color: Palette.ink,
+                  fontSize: 16,
+                  letterSpacing: 0.5),
             ),
             subtitle: Text(
               'AI extractions: ${profile.aiCredits.remaining} of '
               '${profile.aiCredits.extractionsLimit} left',
-              style: const TextStyle(color: Palette.creamDim, fontSize: 13),
+              style: const TextStyle(
+                  color: Palette.inkSoft,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -142,18 +154,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 'MY EQUIPMENT',
                 style: TextStyle(
-                  color: Palette.blush,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  letterSpacing: 1.1,
+                  fontFamily: 'Anton',
+                  color: Palette.cream,
+                  fontSize: 17,
+                  letterSpacing: 1,
+                  shadows: [Shadow(color: Palette.ink, offset: Offset(2, 2))],
                 ),
               ),
             ),
-            TextButton.icon(
+            OutlinedButton.icon(
               onPressed: () => _editEquipment(),
-              icon: const Icon(Icons.add, size: 18, color: Palette.blush),
-              label:
-                  const Text('Add', style: TextStyle(color: Palette.blush)),
+              icon: const Icon(Icons.add, size: 18, color: Palette.ink),
+              label: const Text('ADD'),
             ),
           ],
         ),
@@ -166,7 +178,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         for (var i = 0; i < _equipment.length; i++) ...[
-          Card(
+          BrutCard(
+            padding: EdgeInsets.zero,
+            shadow: 4,
             child: ListTile(
               title: Text(
                 [
@@ -175,7 +189,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   if (_equipment[i].model?.isNotEmpty ?? false)
                     _equipment[i].model!,
                 ].join(' '),
-                style: const TextStyle(color: Palette.cream, fontSize: 14),
+                style: const TextStyle(
+                    color: Palette.ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700),
               ),
               subtitle: Text(
                 [
@@ -184,12 +201,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     '${_equipment[i].burrType} burrs',
                 ].join(' · '),
                 style: const TextStyle(
-                    color: Palette.creamDim, fontSize: 12),
+                    color: Palette.inkSoft,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500),
               ),
               onTap: () => _editEquipment(existing: _equipment[i], index: i),
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline,
-                    size: 20, color: Palette.creamDim),
+                    size: 20, color: Palette.inkSoft),
                 onPressed: () => setState(() {
                   _equipment.removeAt(i);
                   _dirty = true;
@@ -206,19 +225,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               'Unsaved changes',
               style: TextStyle(
-                  color: Palette.blush,
+                  color: Palette.cream,
                   fontSize: 12,
+                  fontWeight: FontWeight.w700,
                   fontStyle: FontStyle.italic),
               textAlign: TextAlign.center,
             ),
           ),
         FilledButton(
           onPressed: _saving ? null : _save,
-          child: Text(_saving
-              ? 'Saving…'
-              : _dirty
-                  ? 'Save equipment •'
-                  : 'Save equipment'),
+          child: Text(_saving ? 'SAVING…' : 'SAVE EQUIPMENT'),
         ),
       ],
     );
@@ -262,17 +278,23 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            widget.existing == null ? 'Add equipment' : 'Edit equipment',
+            widget.existing == null ? 'ADD EQUIPMENT' : 'EDIT EQUIPMENT',
             style: const TextStyle(
-                color: Palette.cream,
-                fontWeight: FontWeight.w700,
-                fontSize: 16),
+                fontFamily: 'Anton',
+                color: Palette.ink,
+                fontSize: 18,
+                letterSpacing: 0.8),
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
             value: _type,
             decoration: const InputDecoration(labelText: 'Type'),
-            dropdownColor: Palette.periWell,
+            style: const TextStyle(
+                color: Palette.ink,
+                fontFamily: 'Rubik',
+                fontWeight: FontWeight.w600,
+                fontSize: 15),
+            dropdownColor: Palette.cream,
             items: [
               for (final t in _equipmentTypes)
                 DropdownMenuItem(value: t, child: Text(t)),
@@ -282,17 +304,23 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
           const SizedBox(height: 10),
           TextField(
             controller: _brandController,
+            style: const TextStyle(
+                color: Palette.ink, fontWeight: FontWeight.w500),
             decoration: const InputDecoration(labelText: 'Brand'),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _modelController,
+            style: const TextStyle(
+                color: Palette.ink, fontWeight: FontWeight.w500),
             decoration: const InputDecoration(labelText: 'Model'),
           ),
           if (_type == 'grinder') ...[
             const SizedBox(height: 10),
             TextField(
               controller: _burrController,
+              style: const TextStyle(
+                  color: Palette.ink, fontWeight: FontWeight.w500),
               decoration:
                   const InputDecoration(labelText: 'Burr type (conical/flat)'),
             ),
@@ -327,7 +355,7 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
                 ),
               );
             },
-            child: const Text('Done'),
+            child: const Text('DONE'),
           ),
         ],
       ),
