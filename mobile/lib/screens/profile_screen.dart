@@ -88,10 +88,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('YOUR SETUP'),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            const PosterHeader(
+              title: 'YOUR',
+              accent: 'SETUP',
+              banner: 'GEAR IN, BETTER CUPS OUT',
+            ),
+            Expanded(child: _body()),
+          ],
+        ),
       ),
-      body: _body(),
     );
   }
 
@@ -137,14 +146,80 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   fontSize: 16,
                   letterSpacing: 0.5),
             ),
-            subtitle: Text(
-              'AI extractions: ${profile.aiCredits.remaining} of '
-              '${profile.aiCredits.extractionsLimit} left',
-              style: const TextStyle(
+            subtitle: const Text(
+              'Your brewing profile',
+              style: TextStyle(
                   color: Palette.inkSoft,
                   fontSize: 13,
                   fontWeight: FontWeight.w600),
             ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        BrutCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'AI BAG SCANS',
+                      style: TextStyle(
+                        fontFamily: 'Anton',
+                        color: Palette.ink,
+                        fontSize: 15,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 9, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Palette.olive,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: Palette.ink, width: 2),
+                    ),
+                    child: Text(
+                      '${profile.aiCredits.remaining} OF ${profile.aiCredits.extractionsLimit} LEFT',
+                      style: const TextStyle(
+                        color: Palette.ink,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  for (var i = 0; i < profile.aiCredits.extractionsLimit; i++)
+                    Container(
+                      width: 34,
+                      height: 12,
+                      margin: const EdgeInsets.only(right: 7),
+                      decoration: BoxDecoration(
+                        color: i < profile.aiCredits.remaining
+                            ? Palette.olive
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: Palette.ink, width: 2.5),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 9),
+              const Text(
+                'Snap a bag photo to add a bean automatically.',
+                style: TextStyle(
+                    color: Palette.inkSoft,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
@@ -232,9 +307,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               textAlign: TextAlign.center,
             ),
           ),
-        FilledButton(
+        BrutButton(
+          expand: true,
+          label: _saving ? 'SAVING…' : 'SAVE EQUIPMENT',
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? 'SAVING…' : 'SAVE EQUIPMENT'),
         ),
       ],
     );
@@ -333,7 +409,9 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
             ),
           ],
           const SizedBox(height: 16),
-          FilledButton(
+          BrutButton(
+            expand: true,
+            label: 'DONE',
             onPressed: () {
               final brand = _brandController.text.trim();
               final model = _modelController.text.trim();
@@ -355,7 +433,6 @@ class _EquipmentSheetState extends State<_EquipmentSheet> {
                 ),
               );
             },
-            child: const Text('DONE'),
           ),
         ],
       ),

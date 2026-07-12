@@ -85,6 +85,31 @@ class BeanCard extends StatelessWidget {
                 if (!bean.isVerified) _tag('community', muted: true),
               ],
             ),
+            if (onTap != null) ...[
+              const SizedBox(height: 11),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 9),
+                decoration: BoxDecoration(
+                  color: Palette.blush,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Palette.ink, width: 3),
+                  boxShadow: const [
+                    BoxShadow(color: Palette.ink, offset: Offset(3, 3)),
+                  ],
+                ),
+                child: const Text(
+                  'DIAL THIS IN',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Anton',
+                    fontSize: 13,
+                    letterSpacing: 1.2,
+                    color: Palette.ink,
+                  ),
+                ),
+              ),
+            ],
           ],
         ],
       ),

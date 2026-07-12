@@ -60,17 +60,26 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('BREW JOURNAL'),
-        actions: [
-          IconButton(
-            onPressed: () => _fetch(),
-            icon: const Icon(Icons.refresh, color: Palette.cream),
-            tooltip: 'Refresh',
-          ),
-        ],
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            PosterHeader(
+              title: 'BREW',
+              accent: 'JOURNAL',
+              banner: _brews.isEmpty
+                  ? 'EVERY CUP MAKES IT SMARTER'
+                  : '${_brews.length} BREW${_brews.length == 1 ? '' : 'S'} · GETTING SMARTER',
+              trailing: IconButton(
+                onPressed: () => _fetch(),
+                icon: const Icon(Icons.refresh, color: Palette.cream),
+                tooltip: 'Refresh',
+              ),
+            ),
+            Expanded(child: _body()),
+          ],
+        ),
       ),
-      body: _body(),
     );
   }
 

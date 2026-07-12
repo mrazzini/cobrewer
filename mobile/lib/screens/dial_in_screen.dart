@@ -244,10 +244,19 @@ class _DialInScreenState extends State<DialInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('DIAL IT IN'),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            const PosterHeader(
+              title: 'DIAL',
+              accent: 'IT IN',
+              banner: 'RECIPE TUNED TO YOUR GEAR',
+            ),
+            Expanded(child: _bean == null ? _beanPicker() : _dialInFlow()),
+          ],
+        ),
       ),
-      body: _bean == null ? _beanPicker() : _dialInFlow(),
     );
   }
 
@@ -256,14 +265,18 @@ class _DialInScreenState extends State<DialInScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: TextField(
-            controller: _beanSearchController,
-            onChanged: _onBeanSearchChanged,
-            style: const TextStyle(
-                color: Palette.ink, fontWeight: FontWeight.w500),
-            decoration: const InputDecoration(
-              hintText: 'Pick a bean to dial in…',
-              prefixIcon: Icon(Icons.search, color: Palette.inkSoft),
+          child: brutShadow(
+            radius: 12,
+            shadow: 4,
+            child: TextField(
+              controller: _beanSearchController,
+              onChanged: _onBeanSearchChanged,
+              style: const TextStyle(
+                  color: Palette.ink, fontWeight: FontWeight.w500),
+              decoration: const InputDecoration(
+                hintText: 'Pick a bean to dial in…',
+                prefixIcon: Icon(Icons.search, color: Palette.inkSoft),
+              ),
             ),
           ),
         ),
@@ -344,7 +357,9 @@ class _DialInScreenState extends State<DialInScreen> {
           ),
         ),
         _sectionTitle('2 · Equipment'),
-        DropdownButtonFormField<String>(
+        brutShadow(
+            radius: 12,
+            child: DropdownButtonFormField<String>(
           value: _brewer,
           decoration: const InputDecoration(labelText: 'Brewer'),
           style: const TextStyle(
@@ -361,9 +376,11 @@ class _DialInScreenState extends State<DialInScreen> {
             _brewer = v ?? _brewer;
             _equipmentTouched = true;
           }),
-        ),
+        )),
         const SizedBox(height: 10),
-        DropdownButtonFormField<String?>(
+        brutShadow(
+            radius: 12,
+            child: DropdownButtonFormField<String?>(
           value: _grinder,
           decoration: const InputDecoration(labelText: 'Grinder (optional)'),
           style: const TextStyle(
@@ -382,11 +399,12 @@ class _DialInScreenState extends State<DialInScreen> {
             _grinder = v;
             _equipmentTouched = true;
           }),
-        ),
+        )),
         const SizedBox(height: 14),
-        FilledButton(
+        BrutButton(
+          expand: true,
+          label: _loadingRec ? 'COMPUTING…' : 'GET RECIPE',
           onPressed: _loadingRec ? null : _getRecipe,
-          child: Text(_loadingRec ? 'COMPUTING…' : 'GET RECIPE'),
         ),
         if (_recError != null)
           Padding(
@@ -408,16 +426,25 @@ class _DialInScreenState extends State<DialInScreen> {
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 10),
-      child: Text(
-        text.toUpperCase(),
-        style: const TextStyle(
+      child: Builder(builder: (context) {
+        final parts = text.toUpperCase().split(' · ');
+        const style = TextStyle(
           fontFamily: 'Anton',
           color: Palette.cream,
           fontSize: 17,
           letterSpacing: 1,
           shadows: [Shadow(color: Palette.ink, offset: Offset(2, 2))],
-        ),
-      ),
+        );
+        if (parts.length < 2) return Text(text.toUpperCase(), style: style);
+        return Text.rich(
+          TextSpan(style: style, children: [
+            TextSpan(
+                text: '${parts[0]} · ',
+                style: const TextStyle(color: Palette.blush)),
+            TextSpan(text: parts.sublist(1).join(' · ')),
+          ]),
+        );
+      }),
     );
   }
 
@@ -510,7 +537,9 @@ class _DialInScreenState extends State<DialInScreen> {
   }
 
   Widget _logForm() {
-    return Column(
+    return BrutCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
       children: [
         Row(
           children: [
@@ -541,14 +570,15 @@ class _DialInScreenState extends State<DialInScreen> {
           maxLines: 2,
           style: const TextStyle(
               color: Palette.ink, fontWeight: FontWeight.w500),
-          decoration: const InputDecoration(labelText: 'Notes'),
+          decoration: const InputDecoration(
+              labelText: 'Notes', fillColor: Colors.white),
         ),
         const SizedBox(height: 12),
         Row(
           children: [
             const Text('RATING',
                 style: TextStyle(
-                    color: Palette.cream,
+                    color: Palette.ink,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.8,
                     fontSize: 12)),
@@ -560,14 +590,13 @@ class _DialInScreenState extends State<DialInScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _logging ? null : _logBrew,
-            child: Text(_logging ? 'LOGGING…' : 'LOG BREW'),
-          ),
+        BrutButton(
+          expand: true,
+          label: _logging ? 'LOGGING…' : 'LOG BREW',
+          onPressed: _logging ? null : _logBrew,
         ),
       ],
+      ),
     );
   }
 
@@ -576,7 +605,7 @@ class _DialInScreenState extends State<DialInScreen> {
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       style: const TextStyle(color: Palette.ink, fontWeight: FontWeight.w500),
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(labelText: label, fillColor: Colors.white),
     );
   }
 }

@@ -106,14 +106,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('EXPLORE BEANS'),
-      ),
-      body: Column(
+      body: SafeArea(
+        bottom: false,
+        child: Column(
         children: [
+          const PosterHeader(
+            title: 'EXPLORE',
+            accent: 'BEANS',
+            banner: '200 COFFEES. ZERO BAD CUPS.',
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            child: brutShadow(
+                radius: 12,
+                shadow: 4,
+                child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
               style: const TextStyle(
@@ -134,10 +141,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         },
                       ),
               ),
-            ),
+            )),
           ),
           SizedBox(
-            height: 44,
+            height: 50,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -176,6 +183,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
           Expanded(child: _body()),
         ],
+        ),
       ),
     );
   }
@@ -196,18 +204,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
         for (final (key, optLabel) in options)
           PopupMenuItem(value: key, child: Text(optLabel)),
       ],
-      child: Chip(
-        label: Row(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(13, 0, 8, 0),
+        decoration: BoxDecoration(
+          color: value == null ? Colors.white : Palette.blush,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Palette.ink, width: 3),
+          boxShadow: const [
+            BoxShadow(color: Palette.ink, offset: Offset(3, 3)),
+          ],
+        ),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(selectedLabel,
-                style: TextStyle(
-                  color: value == null ? Palette.ink : Palette.blushDeep,
-                  fontSize: 13,
+            Text(selectedLabel.toUpperCase(),
+                style: const TextStyle(
+                  color: Palette.ink,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
                 )),
-            Icon(Icons.arrow_drop_down,
-                size: 18,
-                color: value == null ? Palette.ink : Palette.blushDeep),
+            const Icon(Icons.arrow_drop_down, size: 18, color: Palette.ink),
           ],
         ),
       ),
@@ -241,12 +258,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
         itemBuilder: (context, i) {
           if (i == 0) {
             return Text(
-              '$_total bean${_total == 1 ? '' : 's'} · showing ${_beans.length}',
+              'SHOWING ${_beans.length} OF $_total',
               style: const TextStyle(
                 color: Palette.creamDim,
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 0.4,
+                letterSpacing: 1,
               ),
             );
           }

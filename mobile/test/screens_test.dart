@@ -63,7 +63,7 @@ void main() {
 
     expect(find.text('WORKA CHELBESA'), findsOneWidget);
     expect(find.text('FINCA EL PARAISO'), findsOneWidget);
-    expect(find.text('2 beans · showing 2'), findsOneWidget);
+    expect(find.text('SHOWING 2 OF 2'), findsOneWidget);
   });
 
   testWidgets('tapping a bean opens dial-in; recipe prefills the log form',
@@ -132,7 +132,7 @@ void main() {
 
     // Navigated to the journal tab, which lists the brew with its embedded
     // bean summary — no per-bean fetches.
-    expect(find.text('Journal'), findsWidgets);
+    expect(find.text('JOURNAL'), findsWidgets);
     expect(find.textContaining('Juicy'), findsOneWidget);
     expect(find.text('WORKA CHELBESA'), findsOneWidget);
     expect(
@@ -211,11 +211,11 @@ void main() {
     await pumpApp(tester, fakeApi());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Profile'));
+    await tester.tap(find.text('PROFILE'));
     await tester.pumpAndSettle();
 
     expect(find.text('DEV_MOBILE'), findsOneWidget);
-    expect(find.textContaining('2 of 3 left'), findsOneWidget);
+    expect(find.textContaining('2 OF 3 LEFT'), findsOneWidget);
     expect(find.text('1Zpresso JX-Pro'), findsOneWidget);
   });
 }

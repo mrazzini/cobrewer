@@ -73,19 +73,46 @@ class _HomeShellState extends State<HomeShell> {
 
     return Scaffold(
       body: IndexedStack(index: _tab, children: pages),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Palette.ink, width: 3)),
-        ),
-        child: NavigationBar(
-          selectedIndex: _tab,
-          onDestinationSelected: (i) => setState(() => _tab = i),
-          destinations: const [
-            NavigationDestination(icon: Icon(Icons.search), label: 'Explore'),
-            NavigationDestination(icon: Icon(Icons.tune), label: 'Dial-in'),
-            NavigationDestination(icon: Icon(Icons.menu_book), label: 'Journal'),
-            NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
-          ],
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: brutBox(radius: 999, shadow: 5),
+          child: Row(
+            children: [
+              for (final (i, label) in const [
+                (0, 'EXPLORE'),
+                (1, 'DIAL-IN'),
+                (2, 'JOURNAL'),
+                (3, 'PROFILE'),
+              ])
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => setState(() => _tab = i),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: _tab == i
+                          ? BoxDecoration(
+                              color: Palette.ink,
+                              borderRadius: BorderRadius.circular(999),
+                            )
+                          : null,
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          color: _tab == i ? Palette.olive : Palette.ink,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
