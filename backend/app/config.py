@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # App
     DEBUG: bool = False
 
+    # One-time serverless bootstrap (schema + seed). Empty disables the endpoint.
+    ADMIN_BOOTSTRAP_TOKEN: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

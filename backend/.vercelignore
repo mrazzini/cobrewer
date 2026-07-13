@@ -1,6 +1,5 @@
 .venv
 tests
-scripts/data
 alembic.ini
 migrations
 .env
