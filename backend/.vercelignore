@@ -1,0 +1,7 @@
+.venv
+tests
+scripts/data
+alembic.ini
+migrations
+.env
+.env.example
